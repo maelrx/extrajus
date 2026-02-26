@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Building2, Users, TrendingUp, BarChart3, Info } from "lucide-react";
+import { ArrowLeft, Building2, Users, TrendingUp, BarChart3, Info, MapPin } from "lucide-react";
 import { ShareButtons } from "@/components/share-buttons";
 import {
   BarChart,
@@ -85,6 +85,26 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
 
   // Monthly average of highest earner for salary comparison
   const maiorRemuneracaoMensal = orgaoStats.maiorRemuneracao / 12;
+
+  // State breakdown for federal MP organs
+  const isFederalMP = ["MPF", "MPT", "MPM", "MPDFT"].includes(orgaoStats.orgao);
+  const stateBreakdown = useMemo(() => {
+    if (!isFederalMP) return [];
+    const byState = new Map<string, { estado: string; membros: number; acimaTeto: number; totalAcima: number }>();
+    for (const m of orgaoStats.membros) {
+      let s = byState.get(m.estado);
+      if (!s) {
+        s = { estado: m.estado, membros: 0, acimaTeto: 0, totalAcima: 0 };
+        byState.set(m.estado, s);
+      }
+      s.membros++;
+      if (m.acimaTeto > 0) {
+        s.acimaTeto++;
+        s.totalAcima += m.acimaTeto;
+      }
+    }
+    return Array.from(byState.values()).sort((a, b) => b.totalAcima - a.totalAcima);
+  }, [orgaoStats.membros, isFederalMP]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -216,6 +236,72 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
           />
         </div>
 
+        {isFederalMP && stateBreakdown.length > 1 && (
+          <div className="mt-6 rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+            <h2 className="mb-3 font-serif text-base font-bold text-navy">
+              <span className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-red-primary" />
+                Distribuição por Estado
+                <span className="text-xs font-normal text-gray-400">(baseado na lotação)</span>
+              </span>
+            </h2>
+            <div className="h-[28rem]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={stateBreakdown.slice(0, 20)}
+                  layout="vertical"
+                  margin={{ left: 5, right: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    type="number"
+                    tick={{ fontSize: 10, fill: "#94A3B8" }}
+                    tickFormatter={(v) => formatCurrency(v)}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="estado"
+                    tick={{ fontSize: 11, fill: "#1e293b", fontWeight: 600 }}
+                    width={35}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => formatCurrency(value)}
+                    labelFormatter={(label) => `Estado: ${label}`}
+                    contentStyle={{ fontSize: 12 }}
+                  />
+                  <Bar dataKey="totalAcima" fill="#DC2626" name="Total acima do teto" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left text-[11px] uppercase tracking-wider text-gray-400">
+                    <th className="pb-2 pr-4">UF</th>
+                    <th className="pb-2 pr-4 text-right">Membros</th>
+                    <th className="pb-2 pr-4 text-right">Acima do teto</th>
+                    <th className="pb-2 text-right">Total acima (ano)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stateBreakdown.map((s) => (
+                    <tr key={s.estado} className="border-b border-gray-50">
+                      <td className="py-1.5 pr-4 font-semibold text-navy">{s.estado}</td>
+                      <td className="py-1.5 pr-4 text-right text-xs text-gray-500">{formatNumber(s.membros)}</td>
+                      <td className="py-1.5 pr-4 text-right text-xs text-gray-500">
+                        {formatNumber(s.acimaTeto)} ({formatPercent((s.acimaTeto / s.membros) * 100)})
+                      </td>
+                      <td className="py-1.5 text-right text-xs font-semibold text-red-primary">
+                        {formatCurrency(s.totalAcima)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         <div className="mt-6 rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-serif text-base font-bold text-navy">
@@ -236,6 +322,7 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
                   <th className="pb-2 pr-4">#</th>
                   <th className="pb-2 pr-4">Nome</th>
                   <th className="pb-2 pr-4">Cargo</th>
+                  {isFederalMP && <th className="pb-2 pr-4">UF</th>}
                   <th className="pb-2 pr-4 text-right">Base (ano)</th>
                   <th className="pb-2 pr-4 text-right">Total (ano)</th>
                   <th className="pb-2 text-right">Acima do Teto (ano)</th>
@@ -259,6 +346,7 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
                       </span>
                     </td>
                     <td className="py-2 pr-4 text-xs text-gray-500">{m.cargo}</td>
+                    {isFederalMP && <td className="py-2 pr-4 text-xs font-medium text-gray-500">{m.estado}</td>}
                     <td className="py-2 pr-4 text-right text-xs">
                       {formatCurrencyFull(m.remuneracaoBase)}
                     </td>
