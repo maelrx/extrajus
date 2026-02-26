@@ -118,14 +118,119 @@ function mapOrgaoId(id: string): string {
   return id.toUpperCase();
 }
 
-// Maps organ API id to state abbreviation
+// Maps organ API id to state abbreviation (used for non-federal organs)
 function mapEstado(orgaoId: string): string {
-  // Federal organs → DF
-  if (["mpf", "mpt", "mpm", "mpdft"].includes(orgaoId)) return "DF";
-
   const suffix = orgaoId.substring(2).toUpperCase();
   if (suffix === "DFT") return "DF";
   return suffix;
+}
+
+// TRT regions → state of headquarters (for MPT lotação)
+const TRT_REGIAO_ESTADO: Record<string, string> = {
+  "1": "RJ", "2": "SP", "3": "MG", "4": "RS", "5": "BA",
+  "6": "PE", "7": "CE", "8": "PA", "9": "PR", "10": "DF",
+  "11": "AM", "12": "SC", "13": "PB", "14": "RO", "15": "SP",
+  "16": "MA", "17": "ES", "18": "GO", "19": "AL", "20": "SE",
+  "21": "RN", "22": "PI", "23": "MT", "24": "MS",
+};
+
+// PRR regions → state of headquarters (for MPF lotação)
+const PRR_REGIAO_ESTADO: Record<string, string> = {
+  "1": "DF", "2": "RJ", "3": "SP", "4": "RS", "5": "PE", "6": "MG",
+};
+
+// Known PRM cities → state (for MPF municipal offices)
+const PRM_CIDADE_ESTADO: Record<string, string> = {
+  "ALAGOINHAS": "BA", "ALTAMIRA-PA": "PA", "ANAPOLIS": "GO",
+  "ANGRA REIS": "RJ", "ARACATUBA": "SP", "ARAGUAINA": "TO",
+  "ARAPIRACA": "AL", "ARARAQUARA": "SP", "ASSIS": "SP",
+  "B.DO GARÇAS": "MT", "B.GONCALVES": "RS", "BACABAL": "MA",
+  "BAGÉ": "RS", "BARREIRAS": "BA", "BAURU": "SP",
+  "BLUMENAU": "SC", "BRAGANÇA": "PA", "C. MOURAO": "PR",
+  "C.GRANDE": "MS", "CACERES": "MT", "CAMPINAS": "SP",
+  "CAMPOS": "RJ", "CARAGUATA": "SP", "CARUARU": "PE",
+  "CASCAVEL": "PR", "CAXIAS": "MA", "CAXIAS SUL": "RS",
+  "CAÇADOR": "SC", "CHAPECO": "SC", "CORRENTE": "PI",
+  "CORUMBA": "MS", "CRICIUMA": "SC", "CRUZ ALTA": "RS",
+  "DIVINÓPOLIS": "MG", "DOURADOS": "MS", "ERECHIM/P.M": "RS",
+  "EUNAPOLIS": "BA", "F.BELTRAO": "PR", "FEIRA": "BA",
+  "FLORIANO": "PI", "FOZ": "PR", "FRANCA": "SP",
+  "GARANHUNS": "PE", "GOV VALADAR": "MG", "GUANAMBI": "BA",
+  "GUARULHOS": "SP", "ILHEUS": "BA", "IMPERATRIZ": "MA",
+  "IRECÊ": "BA", "ITAJAI": "SC", "ITAPERUNA": "RJ",
+  "ITAPEVA": "SP", "J. NORTE": "CE", "JALES": "SP",
+  "JAU": "SP", "JEQUIE": "BA", "JI PARANÁ": "RO",
+  "JOINVILLE": "SC", "JUIZ FORA": "MG", "JUNDIAI": "SP",
+  "LAGES": "SC", "LIMOEIRO": "PE", "LONDRINA": "PR",
+  "LUZIANIA": "GO", "M. CLAROS": "MG", "MACAE": "RJ",
+  "MARABA": "PA", "MARINGA": "PR", "MARÍLIA": "SP",
+  "MOSSORO": "RN", "N.FRIBURGO": "RJ", "N.HAMBURGO": "RS",
+  "NITEROI": "RJ", "OURINHOS": "SP", "P.FUNDO": "RS",
+  "P.GROSSA": "PR", "P.PRUDENTE": "SP", "PARAGOMINAS": "PA",
+  "PARNAIBA": "PI", "PATO BCO": "PR", "PELOTAS-RS": "RS",
+  "PETROLINA": "PE", "PETROPOLIS": "RJ", "PICOS-PI": "PI",
+  "PIRACICABA": "SP", "R.GRANDE": "RS", "R.PRETO": "SP",
+  "REDENÇÃO": "PA", "RESENDE-RJ": "RJ", "RONDONOPOLI": "MT",
+  "S. TALHADA": "PE", "S.ANGELO": "RS", "S.BERNARDO": "SP",
+  "S.CARLOS": "SP", "S.GONÇALO": "RJ", "S.J. MERITI": "RJ",
+  "S.J.CAMP": "SP", "S.J.DEL REI": "MG", "S.J.R.PRETO": "SP",
+  "S.LIVRAMENT": "RS", "S.MARIA": "RS", "S.MIGUEL": "RN",
+  "S.P.ALDEIA": "RJ", "S.R.NONATO": "PI", "SANTA ROSA": "RS",
+  "SANTAREM": "PA", "SANTOS": "SP", "SETE LAGOAS": "MG",
+  "SINOP": "MT", "SOBRAL": "CE", "SOROCABA": "SP",
+  "SOUSA": "PB", "STA CRUZ SU": "RS", "TABATINGA": "AM",
+  "TAUBATE": "SP", "TEFÉ": "AM", "TRES LAGOAS": "MS",
+  "TUBARAO": "SC", "TUCURUI": "PA", "UBERABA": "MG",
+  "UBERLANDIA": "MG", "UMUARAMA": "PR", "URUGUAIANA": "RS",
+  "V.REDONDA": "RJ", "VARGINHA": "MG", "VIT. CONQUI": "BA",
+};
+
+/**
+ * Extracts state from the lotação field for federal MP organs.
+ * Falls back to "DF" if the lotação cannot be parsed.
+ */
+function mapEstadoFromLotacao(orgaoId: string, lotacao: string): string {
+  if (!lotacao) return "DF";
+  const lot = lotacao.trim().toUpperCase();
+
+  if (orgaoId === "mpdft") return "DF";
+
+  if (orgaoId === "mpf") {
+    // PR-XX → state code (e.g. PR-SP → SP)
+    const prMatch = lot.match(/^PR-([A-Z]{2})$/);
+    if (prMatch) return prMatch[1];
+
+    // PRRXª REGIÃO → region headquarters
+    const prrMatch = lot.match(/PRR(\d)/);
+    if (prrMatch) return PRR_REGIAO_ESTADO[prrMatch[1]] || "DF";
+
+    // PRM-CITY → lookup city
+    const prmMatch = lot.match(/^PRM-(.+)$/);
+    if (prmMatch) return PRM_CIDADE_ESTADO[prmMatch[1]] || "DF";
+
+    // PGR, GABPGR, ESMPU, OFAMOC, OFAMOR → DF
+    return "DF";
+  }
+
+  if (orgaoId === "mpt") {
+    // PRT DA Xª REGIÃO → TRT region headquarters
+    const trtMatch = lot.match(/(\d+)[ªº]\s*REGI/);
+    if (trtMatch) return TRT_REGIAO_ESTADO[trtMatch[1]] || "DF";
+
+    // PROCURADORIA GERAL DO TRABALHO → DF
+    return "DF";
+  }
+
+  if (orgaoId === "mpm") {
+    // "... EM CITY/STATE" → extract state after "/"
+    const slashMatch = lot.match(/\/([A-Z]{2})\s*$/);
+    if (slashMatch) return slashMatch[1];
+
+    // PROCURADORIA-GERAL, SECRETARIA, GABINETE → DF
+    return "DF";
+  }
+
+  return "DF";
 }
 
 // Maps cargo string to our categories
@@ -254,7 +359,8 @@ async function fetchOrgaoCSV(
   // Aggregate by member name
   const members = new Map<string, MemberAgg>();
   const orgaoName = mapOrgaoId(orgaoId);
-  const estado = mapEstado(orgaoId);
+  const isFederalMP = ["mpf", "mpt", "mpm", "mpdft"].includes(orgaoId);
+  const defaultEstado = isFederalMP ? "DF" : mapEstado(orgaoId);
 
   for (const row of rows) {
     const nome = row.nome?.trim();
@@ -265,6 +371,11 @@ async function fetchOrgaoCSV(
     const macro = row.desambiguacao_macro?.toLowerCase() || "";
 
     if (!members.has(nome)) {
+      // For federal MPs, derive state from lotação field
+      const estado = isFederalMP
+        ? mapEstadoFromLotacao(orgaoId, row.lotacao || "")
+        : defaultEstado;
+
       members.set(nome, {
         nome,
         cargo: mapCargo(row.cargo || "", orgaoId),

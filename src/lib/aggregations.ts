@@ -76,9 +76,11 @@ export function getStatsByOrgao(members: Member[]): Map<string, OrgaoStats> {
       }
       const score = 40 + (Math.abs(hash) % 60); // 40-99 range
 
+      // Federal MPs have members across multiple states; show "Federal"
+      const isFederalMP = ["MPF", "MPT", "MPM", "MPDFT"].includes(m.orgao);
       stats = {
         orgao: m.orgao,
-        estado: m.estado,
+        estado: isFederalMP ? "Federal" : m.estado,
         totalMembros: 0,
         membrosAcimaTeto: 0,
         totalAcimaTeto: 0,
