@@ -200,7 +200,7 @@ export function OrgaoListClient({ members, availableYears, currentYear }: OrgaoL
           {filteredStats.map((orgao, i) => (
             <Link
               key={orgao.orgao}
-              href={`/orgao/${encodeURIComponent(orgao.orgao)}`}
+              href={`/orgao/${encodeURIComponent(orgao.orgao)}?ano=${currentYear}`}
               className="group flex items-center gap-2 border-b border-gray-50 px-4 py-2.5 transition-colors hover:bg-surface/80 sm:grid sm:grid-cols-[2rem_1fr_5rem_6rem_6rem_6rem_1.5rem]"
             >
               <span className="w-8 shrink-0 text-xs text-gray-400 sm:w-auto">

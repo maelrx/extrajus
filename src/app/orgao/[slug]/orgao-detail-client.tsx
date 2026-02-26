@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Building2, Users, TrendingUp, BarChart3, Shield } from "lucide-react";
+import { ArrowLeft, Building2, Users, TrendingUp, BarChart3 } from "lucide-react";
 import { ShareButtons } from "@/components/share-buttons";
 import {
   BarChart,
@@ -22,8 +22,15 @@ import { formatCurrency, formatCurrencyFull, formatNumber, formatPercent } from 
 import { SalaryComparison } from "@/components/salary-comparison";
 import { Footer } from "@/components/footer";
 
-export function OrgaoDetailClient({ members }: { members: Member[] }) {
+interface OrgaoDetailClientProps {
+  members: Member[];
+  availableYears: { value: string; label: string }[];
+  currentYear: string;
+}
+
+export function OrgaoDetailClient({ members, availableYears, currentYear }: OrgaoDetailClientProps) {
   const params = useParams();
+  const router = useRouter();
   const slug = decodeURIComponent(params.slug as string);
 
   const orgaoStats = useMemo(() => {
@@ -54,18 +61,14 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
     extras: m.remuneracaoTotal - m.remuneracaoBase,
   }));
 
-  const scoreColor =
-    orgaoStats.transparenciaScore >= 80
-      ? "text-green-600"
-      : orgaoStats.transparenciaScore >= 60
-      ? "text-amber-600"
-      : "text-red-600";
+  // Monthly average of highest earner for salary comparison
+  const maiorRemuneracaoMensal = orgaoStats.maiorRemuneracao / 12;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
-          href="/orgao"
+          href={`/orgao?ano=${currentYear}`}
           className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-navy"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -82,13 +85,29 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
               <p className="text-sm text-gray-500">{orgaoStats.estado}</p>
             </div>
           </div>
-          <ShareButtons
-            title={`ExtraTeto — ${orgaoStats.orgao}`}
-            text={`${orgaoStats.orgao}: ${orgaoStats.membrosAcimaTeto} membros acima do teto constitucional`}
-          />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-500">Ano:</span>
+              <select
+                value={currentYear}
+                onChange={(e) => router.push(`/orgao/${encodeURIComponent(slug)}?ano=${e.target.value}`)}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-navy shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+              >
+                {availableYears.map((y) => (
+                  <option key={y.value} value={y.value}>
+                    {y.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <ShareButtons
+              title={`ExtraTeto — ${orgaoStats.orgao}`}
+              text={`${orgaoStats.orgao}: ${orgaoStats.membrosAcimaTeto} membros acima do teto constitucional`}
+            />
+          </div>
         </div>
 
-        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <Users className="h-4 w-4 text-blue-500" />
@@ -113,7 +132,7 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
           <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <BarChart3 className="h-4 w-4 text-amber" />
-              <span className="text-[11px] text-gray-400">Total Acima/mês</span>
+              <span className="text-[11px] text-gray-400">Total Acima do Teto (ano)</span>
             </div>
             <p className="text-xl font-bold text-red-primary">
               {formatCurrency(orgaoStats.totalAcimaTeto)}
@@ -122,19 +141,10 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
           <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <BarChart3 className="h-4 w-4 text-navy" />
-              <span className="text-[11px] text-gray-400">Média Acima</span>
+              <span className="text-[11px] text-gray-400">Média Acima (ano)</span>
             </div>
             <p className="text-xl font-bold text-navy">
               {formatCurrency(orgaoStats.mediaAcimaTeto)}
-            </p>
-          </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
-            <div className="mb-1 flex items-center gap-1.5">
-              <Shield className="h-4 w-4 text-green-600" />
-              <span className="text-[11px] text-gray-400">Transparência</span>
-            </div>
-            <p className={`text-xl font-bold ${scoreColor}`}>
-              {orgaoStats.transparenciaScore}/100
             </p>
           </div>
         </div>
@@ -143,6 +153,7 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
           <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
             <h2 className="mb-3 font-serif text-base font-bold text-navy">
               Top 15 Remunerações
+              <span className="ml-2 text-xs font-normal text-gray-400">(acumulado {currentYear})</span>
             </h2>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -164,10 +175,11 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
                     contentStyle={{ fontSize: 12 }}
                   />
                   <ReferenceLine
-                    x={TETO_CONSTITUCIONAL}
+                    x={TETO_CONSTITUCIONAL * 12}
                     stroke="#DC2626"
                     strokeDasharray="6 3"
                     strokeWidth={1.5}
+                    label={{ value: "Teto anual", fontSize: 10, fill: "#DC2626" }}
                   />
                   <Bar dataKey="base" stackId="a" fill="#3B82F6" name="Base" />
                   <Bar dataKey="extras" stackId="a" fill="#DC2626" name="Extras" radius={[0, 4, 4, 0]} />
@@ -177,8 +189,8 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
           </div>
 
           <SalaryComparison
-            remuneracao={orgaoStats.maiorRemuneracao}
-            nome={`membro mais bem pago do ${orgaoStats.orgao}`}
+            remuneracao={maiorRemuneracaoMensal}
+            nome={`membro mais bem pago do ${orgaoStats.orgao} (média mensal)`}
           />
         </div>
 
@@ -186,6 +198,7 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-serif text-base font-bold text-navy">
               Membros do {orgaoStats.orgao}
+              <span className="ml-2 text-xs font-normal text-gray-400">(acumulado {currentYear})</span>
             </h2>
             <Link
               href={`/?orgao=${encodeURIComponent(orgaoStats.orgao)}`}
@@ -201,9 +214,9 @@ export function OrgaoDetailClient({ members }: { members: Member[] }) {
                   <th className="pb-2 pr-4">#</th>
                   <th className="pb-2 pr-4">Nome</th>
                   <th className="pb-2 pr-4">Cargo</th>
-                  <th className="pb-2 pr-4 text-right">Base</th>
-                  <th className="pb-2 pr-4 text-right">Total</th>
-                  <th className="pb-2 text-right">Acima do Teto</th>
+                  <th className="pb-2 pr-4 text-right">Base (ano)</th>
+                  <th className="pb-2 pr-4 text-right">Total (ano)</th>
+                  <th className="pb-2 text-right">Acima do Teto (ano)</th>
                 </tr>
               </thead>
               <tbody>
