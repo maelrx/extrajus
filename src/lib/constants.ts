@@ -65,11 +65,14 @@ export const ORGAOS_POR_TIPO = {
     "TRE-RJ", "TRE-RN", "TRE-RO", "TRE-RR", "TRE-RS", "TRE-SC",
     "TRE-SE", "TRE-SP", "TRE-TO",
   ],
-  "Ministérios Públicos": [
-    "MP-AC", "MP-AL", "MP-AM", "MP-AP", "MP-BA", "MP-CE", "MP-DF",
+  "Ministérios Públicos Estaduais": [
+    "MP-AC", "MP-AL", "MP-AM", "MP-AP", "MP-BA", "MP-CE",
     "MP-ES", "MP-GO", "MP-MA", "MP-MG", "MP-MS", "MP-MT", "MP-PA",
     "MP-PB", "MP-PE", "MP-PI", "MP-PR", "MP-RJ", "MP-RN", "MP-RO",
-    "MP-RR", "MP-RS", "MP-SC", "MP-SE", "MP-SP", "MP-TO", "MPU",
+    "MP-RR", "MP-RS", "MP-SC", "MP-SE", "MP-SP", "MP-TO",
+  ],
+  "Ministério Público da União": [
+    "MPF", "MPT", "MPM", "MPDFT",
   ],
   "Tribunais Superiores": [
     "STF", "STJ", "TST", "TSE", "STM",

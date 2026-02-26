@@ -27,11 +27,13 @@ export const DADOSJUSBR_ORGAOS = [
   "tjgo", "tjma", "tjmg", "tjms", "tjmt", "tjpa", "tjpb", "tjpe",
   "tjpi", "tjpr", "tjrj", "tjrn", "tjro", "tjrr", "tjrs", "tjsc",
   "tjse", "tjsp", "tjto",
-  // Ministérios Públicos
-  "mppb", "mpac", "mpal", "mpam", "mpap", "mpba", "mpce", "mpdf",
+  // Ministérios Públicos Estaduais
+  "mppb", "mpac", "mpal", "mpam", "mpap", "mpba", "mpce",
   "mpes", "mpgo", "mpma", "mpmg", "mpms", "mpmt", "mppa", "mppe",
   "mppi", "mppr", "mprj", "mprn", "mpro", "mprr", "mprs", "mpsc",
-  "mpse", "mpsp", "mpto", "mpu",
+  "mpse", "mpsp", "mpto",
+  // Ministério Público da União (ramos)
+  "mpf", "mpt", "mpm", "mpdft",
 ] as const;
 
 export type DadosJusBrOrgao = (typeof DADOSJUSBR_ORGAOS)[number];
@@ -93,6 +95,15 @@ interface DadosJusBrResponse {
  * Maps a DadosJusBr organ ID to our internal organ name
  */
 function mapOrgaoId(id: string): string {
+  // Federal MP branches (ramos do MPU)
+  const federalMPs: Record<string, string> = {
+    mpf: "MPF",
+    mpt: "MPT",
+    mpm: "MPM",
+    mpdft: "MPDFT",
+  };
+  if (federalMPs[id]) return federalMPs[id];
+
   const prefix = id.substring(0, 2).toUpperCase();
   const suffix = id.substring(2).toUpperCase();
 
@@ -100,7 +111,6 @@ function mapOrgaoId(id: string): string {
     return suffix === "DFT" ? "TJ-DF" : `TJ-${suffix}`;
   }
   if (prefix === "MP") {
-    if (id === "mpu") return "MPU";
     return `MP-${suffix}`;
   }
   return id.toUpperCase();

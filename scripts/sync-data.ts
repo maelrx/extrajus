@@ -91,26 +91,40 @@ const ORGAOS = [
   "tjgo", "tjma", "tjmg", "tjms", "tjmt", "tjpa", "tjpb", "tjpe",
   "tjpi", "tjpr", "tjrj", "tjrn", "tjro", "tjrr", "tjrs", "tjsc",
   "tjse", "tjsp", "tjto",
-  "mppb", "mpac", "mpal", "mpam", "mpap", "mpba", "mpce", "mpdf",
+  // MPs estaduais
+  "mppb", "mpac", "mpal", "mpam", "mpap", "mpba", "mpce",
   "mpes", "mpgo", "mpma", "mpmg", "mpms", "mpmt", "mppa", "mppe",
   "mppi", "mppr", "mprj", "mprn", "mpro", "mprr", "mprs", "mpsc",
   "mpse", "mpsp", "mpto",
+  // MPs federais (ramos do MPU)
+  "mpf", "mpt", "mpm", "mpdft",
 ];
 
 // Maps organ API id to readable name
 function mapOrgaoId(id: string): string {
+  // Federal MP branches (ramos do MPU)
+  const federalMPs: Record<string, string> = {
+    mpf: "MPF",
+    mpt: "MPT",
+    mpm: "MPM",
+    mpdft: "MPDFT",
+  };
+  if (federalMPs[id]) return federalMPs[id];
+
   const prefix = id.substring(0, 2).toUpperCase();
   const suffix = id.substring(2).toUpperCase();
   if (prefix === "TJ") return suffix === "DFT" ? "TJ-DF" : `TJ-${suffix}`;
-  if (prefix === "MP") return id === "mpu" ? "MPU" : `MP-${suffix}`;
+  if (prefix === "MP") return `MP-${suffix}`;
   return id.toUpperCase();
 }
 
 // Maps organ API id to state abbreviation
 function mapEstado(orgaoId: string): string {
+  // Federal organs → DF
+  if (["mpf", "mpt", "mpm", "mpdft"].includes(orgaoId)) return "DF";
+
   const suffix = orgaoId.substring(2).toUpperCase();
   if (suffix === "DFT") return "DF";
-  if (orgaoId === "mpu") return "DF";
   return suffix;
 }
 

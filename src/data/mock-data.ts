@@ -76,7 +76,7 @@ const ESTADO_ORGAO_MAP: Record<string, string[]> = {
   AP: ["TJ-AP", "MP-AP", "TRE-AP"],
   BA: ["TJ-BA", "MP-BA", "TRE-BA"],
   CE: ["TJ-CE", "MP-CE", "TRE-CE"],
-  DF: ["TJ-DF", "MP-DF", "TRE-DF", "STF", "STJ", "TST", "TSE", "STM", "MPU", "TRF-1"],
+  DF: ["TJ-DF", "MPDFT", "TRE-DF", "STF", "STJ", "TST", "TSE", "STM", "MPF", "MPT", "MPM", "TRF-1"],
   ES: ["TJ-ES", "MP-ES", "TRE-ES"],
   GO: ["TJ-GO", "MP-GO", "TRE-GO"],
   MA: ["TJ-MA", "MP-MA", "TRE-MA"],
@@ -100,7 +100,7 @@ const ESTADO_ORGAO_MAP: Record<string, string[]> = {
 };
 
 function getCargoForOrgao(orgao: string): Cargo {
-  if (orgao.startsWith("MP") || orgao === "MPU") {
+  if (orgao.startsWith("MP") || ["MPF", "MPT", "MPM", "MPDFT"].includes(orgao)) {
     return rand() > 0.5 ? "Promotor(a)" : "Procurador(a)";
   }
   if (["STF", "STJ", "TST", "TSE", "STM"].includes(orgao)) {
