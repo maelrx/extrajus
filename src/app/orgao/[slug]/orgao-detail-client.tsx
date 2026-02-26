@@ -245,7 +245,19 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
                 {topMembers.map((m, i) => (
                   <tr key={m.id} className="border-b border-gray-50">
                     <td className="py-2 pr-4 text-xs text-gray-400">{i + 1}</td>
-                    <td className="py-2 pr-4 font-medium text-navy">{m.nome}</td>
+                    <td className="py-2 pr-4 font-medium text-navy">
+                      <span className="flex items-center gap-1.5">
+                        {m.nome}
+                        {m.remuneracaoBase === 0 && (
+                          <span
+                            title="Remuneração base informada como R$ 0,00 no DadosJusBr"
+                            className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5 text-[9px] font-semibold text-amber-700"
+                          >
+                            Base R$ 0
+                          </span>
+                        )}
+                      </span>
+                    </td>
                     <td className="py-2 pr-4 text-xs text-gray-500">{m.cargo}</td>
                     <td className="py-2 pr-4 text-right text-xs">
                       {formatCurrencyFull(m.remuneracaoBase)}

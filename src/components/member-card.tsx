@@ -127,6 +127,15 @@ export function MemberCard({ member, rank, isExpanded, onToggle }: MemberCardPro
                 <h3 className={`truncate font-bold text-navy ${isTop3 ? "text-sm sm:text-base" : "text-sm"}`}>
                   {member.nome}
                 </h3>
+                {member.remuneracaoBase === 0 && (
+                  <span
+                    title="Remuneração base informada como R$ 0,00 no DadosJusBr"
+                    className="flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold text-amber-700"
+                  >
+                    <AlertTriangle className="h-2.5 w-2.5" />
+                    Base R$ 0
+                  </span>
+                )}
                 {hasSpikeMonths && (
                   <span title="Mês com pico de pagamento detectado">
                     <AlertTriangle className="h-3 w-3 shrink-0 text-amber-500" />
