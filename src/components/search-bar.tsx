@@ -1,81 +1,68 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import Fuse from "fuse.js";
 import { Search, X } from "lucide-react";
-import type { Member } from "@/data/mock-data";
 import { formatCurrency } from "@/lib/utils";
 
+interface SearchResult {
+  id: number;
+  nome: string;
+  cargo: string;
+  orgao: string;
+  estado: string;
+  remuneracaoTotal: number;
+}
+
 interface SearchBarProps {
-  members: Member[];
   onSearch: (query: string) => void;
   onSelectMember: (id: number) => void;
 }
 
-export function SearchBar({ members, onSearch, onSelectMember }: SearchBarProps) {
+export function SearchBar({ onSearch, onSelectMember }: SearchBarProps) {
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<Member[]>([]);
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fuse = useRef(
-    new Fuse(members, {
-      keys: ["nome", "orgao", "cargo"],
-      threshold: 0.4,
-      ignoreLocation: true,
-      getFn: (obj, path) => {
-        const value = Fuse.config.getFn(obj, path);
-        if (typeof value === "string") {
-          return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        }
-        if (Array.isArray(value)) {
-          return value.map(v => typeof v === "string" ? v.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : v);
-        }
-        return value;
-      },
-    })
-  );
+  const fetchSuggestions = useCallback(async (value: string) => {
+    if (value.length < 2) {
+      setSuggestions([]);
+      setIsOpen(false);
+      return;
+    }
 
-  useEffect(() => {
-    fuse.current = new Fuse(members, {
-      keys: ["nome", "orgao", "cargo"],
-      threshold: 0.4,
-      ignoreLocation: true,
-      getFn: (obj, path) => {
-        const value = Fuse.config.getFn(obj, path);
-        if (typeof value === "string") {
-          return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        }
-        if (Array.isArray(value)) {
-          return value.map(v => typeof v === "string" ? v.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : v);
-        }
-        return value;
-      },
-    });
-  }, [members]);
+    // Cancel previous request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(value)}`,
+        { signal: controller.signal }
+      );
+      if (!res.ok) return;
+      const data: SearchResult[] = await res.json();
+      setSuggestions(data);
+      setIsOpen(data.length > 0);
+    } catch {
+      // Aborted or network error — ignore
+    }
+  }, []);
 
   const handleSearch = useCallback(
     (value: string) => {
       setQuery(value);
       setSelectedIndex(-1);
-
-      if (value.length < 2) {
-        setSuggestions([]);
-        setIsOpen(false);
-        return;
-      }
-
-      const normalizedQuery = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      const results = fuse.current.search(normalizedQuery, { limit: 6 });
-      setSuggestions(results.map((r) => r.item));
-      setIsOpen(results.length > 0);
+      fetchSuggestions(value);
     },
-    []
+    [fetchSuggestions]
   );
 
-  // Debounced search for filtering
+  // Debounced search for filtering the main list
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch(query);
@@ -86,7 +73,10 @@ export function SearchBar({ members, onSearch, onSelectMember }: SearchBarProps)
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -99,7 +89,9 @@ export function SearchBar({ members, onSearch, onSelectMember }: SearchBarProps)
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => Math.min(prev + 1, suggestions.length - 1));
+      setSelectedIndex((prev) =>
+        Math.min(prev + 1, suggestions.length - 1)
+      );
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prev) => Math.max(prev - 1, -1));
@@ -155,9 +147,7 @@ export function SearchBar({ members, onSearch, onSelectMember }: SearchBarProps)
                 setIsOpen(false);
               }}
               className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${
-                index === selectedIndex
-                  ? "bg-surface"
-                  : "hover:bg-gray-50"
+                index === selectedIndex ? "bg-surface" : "hover:bg-gray-50"
               }`}
             >
               <div>

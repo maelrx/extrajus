@@ -100,7 +100,6 @@ export function HomeClient({ members, dataMonth, availableMonths, currentMonth }
   return (
     <div className="min-h-screen bg-background">
       <Header
-        members={members}
         onSearch={handleSearch}
         onSelectMember={handleSelectMember}
         dataMonth={dataMonth}

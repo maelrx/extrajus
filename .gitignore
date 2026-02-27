@@ -40,8 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# database
-/data/*.db
+# database (WAL/SHM são temporários, o .db é commitado pelo cron-sync)
 /data/*.db-wal
 /data/*.db-shm
 

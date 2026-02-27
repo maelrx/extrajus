@@ -71,6 +71,11 @@ sqlite.exec(`
   CREATE INDEX IF NOT EXISTS idx_membros_acima_teto ON membros(acima_teto DESC);
   CREATE INDEX IF NOT EXISTS idx_membros_mes ON membros(mes_referencia);
   CREATE INDEX IF NOT EXISTS idx_historico_membro ON historico_mensal(membro_id);
+  CREATE VIRTUAL TABLE IF NOT EXISTS membros_fts USING fts5(
+    nome, cargo, orgao,
+    content='membros',
+    content_rowid='id'
+  );
 `);
 
 const insertMembro = sqlite.prepare(`
@@ -514,6 +519,14 @@ async function seedWithMockData() {
   });
 
   insertMany(mockMembers);
+
+  // Rebuild FTS index
+  sqlite.exec(`
+    DELETE FROM membros_fts;
+    INSERT INTO membros_fts(rowid, nome, cargo, orgao)
+      SELECT id, nome, cargo, orgao FROM membros;
+  `);
+
   console.log(`Done: ${mockMembers.length} members seeded`);
 }
 
@@ -567,6 +580,14 @@ async function syncAll(year: number, month: number, force: boolean) {
       await new Promise((r) => setTimeout(r, 500));
     }
   }
+
+  // Rebuild FTS index
+  console.log("Rebuilding FTS index...");
+  sqlite.exec(`
+    DELETE FROM membros_fts;
+    INSERT INTO membros_fts(rowid, nome, cargo, orgao)
+      SELECT id, nome, cargo, orgao FROM membros;
+  `);
 
   console.log(`\n--- Sync Complete ---`);
   console.log(`Total members: ${total.toLocaleString()}`);

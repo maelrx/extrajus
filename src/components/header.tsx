@@ -1,23 +1,20 @@
 "use client";
 
 import { SearchBar } from "./search-bar";
-import type { Member } from "@/data/mock-data";
 
 interface HeaderProps {
-  members: Member[];
   onSearch: (query: string) => void;
   onSelectMember: (id: number) => void;
   dataMonth?: string;
 }
 
-export function Header({ members, onSearch, onSelectMember, dataMonth }: HeaderProps) {
+export function Header({ onSearch, onSelectMember, dataMonth }: HeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
       <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
         {/* Search */}
         <div className="flex flex-1">
           <SearchBar
-            members={members}
             onSearch={onSearch}
             onSelectMember={onSelectMember}
           />
