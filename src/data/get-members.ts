@@ -264,94 +264,100 @@ export interface MemberProfile {
  * Includes accumulated stats across all available months and ranking within the organ.
  */
 export function getMemberProfile(orgaoSlug: string, nomeSlug: string): MemberProfile | null {
+  return cached(`profile:${orgaoSlug}:${nomeSlug}`, () => {
+    try {
+      const db = openDB();
+      if (!db) return null;
 
-  try {
-    const db = openDB();
-    if (!db) return null;
+      // Step 1: resolve slugs to actual orgao name (small query: ~80 rows)
+      const orgaos = db
+        .prepare("SELECT DISTINCT orgao FROM membros")
+        .all() as { orgao: string }[];
+      const matchedOrgao = orgaos.find((r) => slugify(r.orgao) === orgaoSlug);
+      if (!matchedOrgao) { db.close(); return null; }
 
-    const allRows = db
-      .prepare(
-        `SELECT * FROM membros
-         WHERE 1=1
-         ORDER BY mes_referencia DESC`
-      )
-      .all() as Record<string, unknown>[];
+      // Step 2: resolve nome slug within that orgao (small query: ~500-2000 rows)
+      const nomes = db
+        .prepare("SELECT DISTINCT nome FROM membros WHERE orgao = ?")
+        .all(matchedOrgao.orgao) as { nome: string }[];
+      const matchedNome = nomes.find((r) => slugify(r.nome) === nomeSlug);
+      if (!matchedNome) { db.close(); return null; }
 
-    const memberRows = allRows.filter(
-      (r) =>
-        slugify(r.orgao as string) === orgaoSlug &&
-        slugify(r.nome as string) === nomeSlug
-    );
+      // Step 3: get all monthly records for this member (small query: ~12 rows)
+      const memberRows = db
+        .prepare(
+          `SELECT * FROM membros
+           WHERE orgao = ? AND nome = ?
+           ORDER BY mes_referencia DESC`
+        )
+        .all(matchedOrgao.orgao, matchedNome.nome) as Record<string, unknown>[];
 
-    if (memberRows.length === 0) {
+      if (memberRows.length === 0) { db.close(); return null; }
+
+      const latest = memberRows[0];
+      const totalAcimaTeto = memberRows.reduce(
+        (sum, r) => sum + (r.acima_teto as number), 0
+      );
+      const mediaTotal =
+        memberRows.reduce((sum, r) => sum + (r.remuneracao_total as number), 0) /
+        memberRows.length;
+      const picoRow = memberRows.reduce((max, r) =>
+        (r.remuneracao_total as number) > (max.remuneracao_total as number) ? r : max
+      );
+
+      // Step 4: ranking within the organ for the latest month
+      const mesRecente = latest.mes_referencia as string;
+      const orgaoMembersLatest = db
+        .prepare(
+          `SELECT nome, remuneracao_total FROM membros
+           WHERE orgao = ? AND mes_referencia = ?
+           ORDER BY remuneracao_total DESC`
+        )
+        .all(matchedOrgao.orgao, mesRecente) as Record<string, unknown>[];
+
+      const rankNoOrgao =
+        orgaoMembersLatest.findIndex(
+          (r) => (r.nome as string) === matchedNome.nome
+        ) + 1;
+
       db.close();
+
+      const historico = [...memberRows].reverse().map((r) => ({
+        mes: r.mes_referencia as string,
+        remuneracaoBase: r.remuneracao_base as number,
+        verbasIndenizatorias: r.verbas_indenizatorias as number,
+        direitosEventuais: r.direitos_eventuais as number,
+        direitosPessoais: r.direitos_pessoais as number,
+        remuneracaoTotal: r.remuneracao_total as number,
+        acimaTeto: r.acima_teto as number,
+      }));
+
+      return {
+        nome: latest.nome as string,
+        cargo: latest.cargo as string,
+        orgao: latest.orgao as string,
+        estado: latest.estado as string,
+        mesRecente,
+        remuneracaoAtual: latest.remuneracao_total as number,
+        acimaTeto: latest.acima_teto as number,
+        percentualAcimaTeto: latest.percentual_acima_teto as number,
+        remuneracaoBase: latest.remuneracao_base as number,
+        verbasIndenizatorias: latest.verbas_indenizatorias as number,
+        direitosEventuais: latest.direitos_eventuais as number,
+        direitosPessoais: latest.direitos_pessoais as number,
+        totalAcimaTeto,
+        mediaTotal,
+        mesPico: picoRow.mes_referencia as string,
+        valorPico: picoRow.remuneracao_total as number,
+        mesesComDados: memberRows.length,
+        rankNoOrgao,
+        totalNoOrgao: orgaoMembersLatest.length,
+        historico,
+      };
+    } catch {
       return null;
     }
-
-    const latest = memberRows[0];
-
-    const totalAcimaTeto = memberRows.reduce(
-      (sum, r) => sum + (r.acima_teto as number),
-      0
-    );
-    const mediaTotal =
-      memberRows.reduce((sum, r) => sum + (r.remuneracao_total as number), 0) /
-      memberRows.length;
-    const picoRow = memberRows.reduce((max, r) =>
-      (r.remuneracao_total as number) > (max.remuneracao_total as number) ? r : max
-    );
-
-    const mesRecente = latest.mes_referencia as string;
-    const orgaoMembersLatest = db
-      .prepare(
-        `SELECT nome, remuneracao_total FROM membros
-         WHERE orgao = ? AND mes_referencia = ?
-         ORDER BY remuneracao_total DESC`
-      )
-      .all(latest.orgao as string, mesRecente) as Record<string, unknown>[];
-
-    const rankNoOrgao =
-      orgaoMembersLatest.findIndex(
-        (r) => slugify(r.nome as string) === nomeSlug
-      ) + 1;
-
-    db.close();
-
-    const historico = [...memberRows].reverse().map((r) => ({
-      mes: r.mes_referencia as string,
-      remuneracaoBase: r.remuneracao_base as number,
-      verbasIndenizatorias: r.verbas_indenizatorias as number,
-      direitosEventuais: r.direitos_eventuais as number,
-      direitosPessoais: r.direitos_pessoais as number,
-      remuneracaoTotal: r.remuneracao_total as number,
-      acimaTeto: r.acima_teto as number,
-    }));
-
-    return {
-      nome: latest.nome as string,
-      cargo: latest.cargo as string,
-      orgao: latest.orgao as string,
-      estado: latest.estado as string,
-      mesRecente,
-      remuneracaoAtual: latest.remuneracao_total as number,
-      acimaTeto: latest.acima_teto as number,
-      percentualAcimaTeto: latest.percentual_acima_teto as number,
-      remuneracaoBase: latest.remuneracao_base as number,
-      verbasIndenizatorias: latest.verbas_indenizatorias as number,
-      direitosEventuais: latest.direitos_eventuais as number,
-      direitosPessoais: latest.direitos_pessoais as number,
-      totalAcimaTeto,
-      mediaTotal,
-      mesPico: picoRow.mes_referencia as string,
-      valorPico: picoRow.remuneracao_total as number,
-      mesesComDados: memberRows.length,
-      rankNoOrgao,
-      totalNoOrgao: orgaoMembersLatest.length,
-      historico,
-    };
-  } catch {
-    return null;
-  }
+  });
 }
 
 /**

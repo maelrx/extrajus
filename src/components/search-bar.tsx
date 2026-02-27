@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, memberUrl } from "@/lib/utils";
 
 interface SearchResult {
   id: number;
@@ -19,6 +20,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ onSearch, onSelectMember }: SearchBarProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -97,7 +99,8 @@ export function SearchBar({ onSearch, onSelectMember }: SearchBarProps) {
       setSelectedIndex((prev) => Math.max(prev - 1, -1));
     } else if (e.key === "Enter" && selectedIndex >= 0) {
       e.preventDefault();
-      onSelectMember(suggestions[selectedIndex].id);
+      const s = suggestions[selectedIndex];
+      router.push(memberUrl(s.orgao, s.nome));
       setIsOpen(false);
     } else if (e.key === "Escape") {
       setIsOpen(false);
@@ -140,10 +143,12 @@ export function SearchBar({ onSearch, onSelectMember }: SearchBarProps) {
       {isOpen && suggestions.length > 0 && (
         <div className="absolute top-full z-50 mt-1 w-full rounded-lg border border-gray-200 bg-white shadow-lg">
           {suggestions.map((member, index) => (
-            <button
+            <a
               key={member.id}
-              onClick={() => {
-                onSelectMember(member.id);
+              href={memberUrl(member.orgao, member.nome)}
+              onClick={(e) => {
+                e.preventDefault();
+                router.push(memberUrl(member.orgao, member.nome));
                 setIsOpen(false);
               }}
               className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${
@@ -159,7 +164,7 @@ export function SearchBar({ onSearch, onSelectMember }: SearchBarProps) {
               <span className="text-xs font-medium text-red-primary">
                 {formatCurrency(member.remuneracaoTotal)}
               </span>
-            </button>
+            </a>
           ))}
         </div>
       )}
