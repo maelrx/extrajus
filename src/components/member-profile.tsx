@@ -255,19 +255,12 @@ export function MemberProfileView({ member }: { member: MemberProfile }) {
             <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-amber-700">
               Para contextualizar
             </h3>
-            <div className="grid grid-cols-1 gap-3 text-sm text-amber-900 sm:grid-cols-2">
-              <p>
-                Somente o valor <strong>acima do teto</strong> deste mês
-                ({formatCurrency(member.acimaTeto)}) equivale a{" "}
-                <strong>{salariosMinimos} salários mínimos</strong>.
-              </p>
-              <p>
-                No total acumulado, este membro já recebeu{" "}
-                <strong>{formatCurrency(member.totalAcimaTeto)}</strong> acima
-                do teto constitucional — o equivalente a{" "}
-                <strong>{salariosMinimosTotal.toLocaleString("pt-BR")} salários mínimos</strong>.
-              </p>
-            </div>
+            <p className="text-sm text-amber-900">
+              No total acumulado, este membro já recebeu{" "}
+              <strong>{formatCurrency(member.totalAcimaTeto)}</strong> acima
+              do teto constitucional — o equivalente a{" "}
+              <strong>{salariosMinimosTotal.toLocaleString("pt-BR")} salários mínimos</strong>.
+            </p>
           </motion.div>
         )}
 
