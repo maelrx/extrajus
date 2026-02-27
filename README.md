@@ -47,7 +47,9 @@ O projeto coleta dados públicos da API do [DadosJusBr](https://dadosjusbr.org/)
 - **Mapa de calor** — Visualização geográfica dos supersalários por estado brasileiro
 - **Estatísticas agregadas** — Top 10 órgãos, composição da remuneração, comparações salariais
 - **Páginas por órgão** — Detalhamento individual de cada tribunal e ministério público
+- **Detecção de anomalias** — Variações atípicas de remuneração entre meses consecutivos com filtros por estado/órgão
 - **Evolução temporal** — Histórico mensal de pagamentos por membro
+- **Sync automático** — GitHub Action atualiza os dados nos dias 1, 10 e 20 de cada mês
 - **API pública REST** — Endpoints documentados para consumo externo dos dados
 - **Exportação CSV** — Download dos dados filtrados com proteção contra CSV injection
 - **Compartilhamento social** — Botões para Twitter/X, Facebook, WhatsApp e link direto
@@ -68,7 +70,7 @@ O projeto coleta dados públicos da API do [DadosJusBr](https://dadosjusbr.org/)
 | **Ícones** | [Lucide React](https://lucide.dev/) |
 | **Banco de Dados** | [SQLite](https://www.sqlite.org/) via [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) |
 | **ORM** | [Drizzle ORM](https://orm.drizzle.team/) |
-| **Busca** | [Fuse.js](https://www.fusejs.io/) (fuzzy search) |
+| **Busca** | [SQLite FTS5](https://www.sqlite.org/fts5.html) (full-text search server-side) |
 | **Virtualização** | [@tanstack/react-virtual](https://tanstack.com/virtual) |
 | **Testes** | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/) |
 | **Fonte de Dados** | [DadosJusBr API](https://dadosjusbr.org/) |
@@ -86,7 +88,7 @@ O projeto coleta dados públicos da API do [DadosJusBr](https://dadosjusbr.org/)
 
 ```bash
 # Clone o repositório
-git clone https://github.com/andredutraf/extrateto.git
+git clone https://github.com/skottrun/extrateto.git
 cd extrateto
 
 # Instale as dependências
@@ -140,6 +142,7 @@ Abra [http://localhost:3000](http://localhost:3000) no navegador.
 | Estatísticas | `/estatisticas` | Gráficos e análises agregadas |
 | Órgãos | `/orgao` | Lista de tribunais e MPs |
 | Detalhe Órgão | `/orgao/[slug]` | Dados detalhados por órgão |
+| Anomalias | `/anomalias` | Detecção de variações atípicas de remuneração |
 | API Docs | `/api-docs` | Documentação interativa da API |
 | Metodologia | `/metodologia` | Explicação da coleta e tratamento |
 | Sobre | `/sobre` | Sobre o projeto |
@@ -181,17 +184,21 @@ curl http://localhost:3000/api/v1/orgaos
 
 ```
 extrateto/
-├── data/                    # Banco SQLite (não versionado)
+├── .github/workflows/       # GitHub Actions (cron-sync automático)
+├── data/                    # Banco SQLite (versionado, atualizado pelo cron)
 ├── e2e/                     # Testes E2E (Playwright)
 ├── scripts/
 │   └── sync-data.ts         # Script de sincronização com DadosJusBr
 ├── public/                  # Assets estáticos
 ├── src/
 │   ├── app/                 # Rotas (Next.js App Router)
-│   │   ├── api/v1/          # API REST
-│   │   │   ├── estados/     # GET /api/v1/estados
-│   │   │   ├── membros/     # GET /api/v1/membros
-│   │   │   └── orgaos/      # GET /api/v1/orgaos
+│   │   ├── api/
+│   │   │   ├── search/      # GET /api/search (busca FTS5)
+│   │   │   └── v1/          # API REST
+│   │   │       ├── estados/ # GET /api/v1/estados
+│   │   │       ├── membros/ # GET /api/v1/membros
+│   │   │       └── orgaos/  # GET /api/v1/orgaos
+│   │   ├── anomalias/       # Página de detecção de anomalias
 │   │   ├── estatisticas/    # Página de estatísticas
 │   │   ├── mapa/            # Página do mapa
 │   │   ├── orgao/           # Páginas de órgãos
