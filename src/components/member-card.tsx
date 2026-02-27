@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Copy, Share2, AlertTriangle, Loader2 } from "lucide-react";
+import { ChevronDown, Copy, Share2, AlertTriangle, Loader2, ExternalLink } from "lucide-react";
 import type { Member, MonthlyRecord } from "@/data/mock-data";
 import { TETO_CONSTITUCIONAL } from "@/lib/constants";
-import { formatCurrency, formatCurrencyFull, formatPercent } from "@/lib/utils";
+import { formatCurrency, formatCurrencyFull, formatPercent, memberUrl } from "@/lib/utils";
 import { SalaryBar } from "./salary-bar";
 import { TemporalChart } from "./temporal-chart";
 
@@ -270,6 +271,14 @@ export function MemberCard({ member, rank, isExpanded, onToggle }: MemberCardPro
 
               {/* Actions */}
               <div className="mt-5 flex items-center gap-2">
+                <Link
+                  href={memberUrl(member.orgao, member.nome)}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-primary shadow-sm transition-all hover:border-red-300 hover:bg-red-100 hover:shadow-md active:scale-[0.98]"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  Ver perfil completo
+                </Link>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

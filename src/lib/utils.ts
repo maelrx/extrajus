@@ -47,3 +47,16 @@ export function formatCompactCurrency(value: number): string {
 export function removeAccents(str: string): string {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
+
+export function slugify(name: string): string {
+  return removeAccents(name)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export function memberUrl(orgao: string, nome: string): string {
+  const orgaoSlug = slugify(orgao);
+  const nomeSlug = slugify(nome);
+  return `/membro/${orgaoSlug}/${nomeSlug}`;
+}
