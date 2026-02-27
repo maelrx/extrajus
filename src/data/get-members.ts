@@ -247,3 +247,79 @@ export function getDataMonth(mesReferencia?: string): string {
     return "Jun/2025";
   }
 }
+
+export interface Anomalia {
+  nome: string;
+  cargo: string;
+  orgao: string;
+  estado: string;
+  mesAnterior: string;
+  mesAtual: string;
+  totalAnterior: number;
+  totalAtual: number;
+  variacaoAbs: number;
+  variacaoPct: number;
+}
+
+/**
+ * Detects salary anomalies: members with >200% salary spike between consecutive months.
+ * Uses LAG window function for efficiency.
+ */
+export function getAnomalias(ano: number, minVariacaoPct = 200): Anomalia[] {
+  try {
+    const db = openDB();
+    if (!db) return [];
+
+    const anoAnterior = ano - 1;
+    const anoStr = String(ano);
+    const multiplicador = 1 + minVariacaoPct / 100;
+
+    const rows = db
+      .prepare(
+        `WITH ordered AS (
+          SELECT
+            nome, cargo, orgao, estado,
+            mes_referencia,
+            remuneracao_total,
+            LAG(mes_referencia) OVER (PARTITION BY nome, orgao ORDER BY mes_referencia) AS mes_anterior,
+            LAG(remuneracao_total) OVER (PARTITION BY nome, orgao ORDER BY mes_referencia) AS total_anterior
+          FROM membros
+          WHERE ano_referencia IN (?, ?)
+        )
+        SELECT
+          nome, cargo, orgao, estado,
+          mes_anterior,
+          mes_referencia AS mes_atual,
+          total_anterior,
+          remuneracao_total AS total_atual,
+          remuneracao_total - total_anterior AS variacao_abs,
+          ((remuneracao_total - total_anterior) / total_anterior) * 100 AS variacao_pct
+        FROM ordered
+        WHERE mes_anterior IS NOT NULL
+          AND total_anterior >= 50000
+          AND substr(mes_referencia, 1, 4) = ?
+          AND remuneracao_total > total_anterior * ?
+        ORDER BY variacao_abs DESC
+        LIMIT 750`
+      )
+      .all(ano, anoAnterior, anoStr, multiplicador) as Record<string, unknown>[];
+
+    db.close();
+
+    return rows.map((r) => ({
+      nome: r.nome as string,
+      cargo: r.cargo as string,
+      orgao: r.orgao as string,
+      estado: r.estado as string,
+      mesAnterior: r.mes_anterior as string,
+      mesAtual: r.mes_atual as string,
+      totalAnterior: r.total_anterior as number,
+      totalAtual: r.total_atual as number,
+      variacaoAbs: r.variacao_abs as number,
+      variacaoPct: r.variacao_pct as number,
+    }));
+  } catch (err) {
+    console.error("getAnomalias error:", err);
+    return [];
+  }
+}

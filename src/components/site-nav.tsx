@@ -7,6 +7,7 @@ import {
   Map,
   BarChart3,
   Building2,
+  AlertTriangle,
   Code2,
   BookOpen,
   Info,
@@ -25,6 +26,7 @@ const NAV_GROUPS = [
       { href: "/mapa", label: "Mapa", icon: Map },
       { href: "/estatisticas", label: "Estatísticas", icon: BarChart3 },
       { href: "/orgao", label: "Órgãos", icon: Building2 },
+      { href: "/anomalias", label: "Anomalias", icon: AlertTriangle },
     ],
   },
   {
