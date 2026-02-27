@@ -146,7 +146,7 @@ export function MemberProfileView({ member }: { member: MemberProfile }) {
               )}
             </div>
             <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
-              <p className="font-serif text-3xl font-bold text-navy sm:text-4xl">
+              <p className="text-3xl font-bold text-navy sm:text-4xl">
                 {formatCurrency(member.remuneracaoAtual)}
               </p>
               {member.acimaTeto > 0 && (
@@ -259,8 +259,7 @@ export function MemberProfileView({ member }: { member: MemberProfile }) {
               <p>
                 Somente o valor <strong>acima do teto</strong> deste mês
                 ({formatCurrency(member.acimaTeto)}) equivale a{" "}
-                <strong>{salariosMinimos} salários mínimos</strong> (R${" "}
-                {SALARIO_MINIMO.toLocaleString("pt-BR")}).
+                <strong>{salariosMinimos} salários mínimos</strong>.
               </p>
               <p>
                 No total acumulado, este membro já recebeu{" "}
