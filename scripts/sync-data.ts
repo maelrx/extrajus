@@ -521,13 +521,7 @@ async function seedWithMockData() {
   });
 
   insertMany(mockMembers);
-
-  // Rebuild FTS index
-  sqlite.exec(`
-    DELETE FROM membros_fts;
-    INSERT INTO membros_fts(rowid, nome, cargo, orgao)
-      SELECT id, nome, cargo, orgao FROM membros;
-  `);
+  rebuildFTS();
 
   console.log(`Done: ${mockMembers.length} members seeded`);
 }
@@ -583,19 +577,21 @@ async function syncAll(year: number, month: number, force: boolean) {
     }
   }
 
-  // Rebuild FTS index
+  console.log(`\n--- Sync Complete ---`);
+  console.log(`Total members: ${total.toLocaleString()}`);
+  console.log(`Successful organs: ${success}/${ORGAOS.length}`);
+  console.log(`Failed organs: ${errors}`);
+  console.log(`Month: ${mesRef}\n`);
+}
+
+function rebuildFTS() {
   console.log("Rebuilding FTS index...");
   sqlite.exec(`
     DELETE FROM membros_fts;
     INSERT INTO membros_fts(rowid, nome, cargo, orgao)
       SELECT id, nome, cargo, orgao FROM membros;
   `);
-
-  console.log(`\n--- Sync Complete ---`);
-  console.log(`Total members: ${total.toLocaleString()}`);
-  console.log(`Successful organs: ${success}/${ORGAOS.length}`);
-  console.log(`Failed organs: ${errors}`);
-  console.log(`Month: ${mesRef}\n`);
+  console.log("FTS index rebuilt.\n");
 }
 
 // CLI
@@ -634,6 +630,7 @@ async function main() {
     for (let m = 1; m <= 12; m++) {
       await syncAll(year, m, force);
     }
+    rebuildFTS();
     console.log(`\n--- Full Year Sync Complete ---\n`);
     return;
   }
@@ -646,6 +643,7 @@ async function main() {
       process.exit(1);
     }
     await syncAll(year, month, force);
+    rebuildFTS();
     return;
   }
 
@@ -663,11 +661,13 @@ async function main() {
       m++;
       if (m > 12) { m = 1; y++; }
     }
+    rebuildFTS();
     return;
   }
 
   // No flags: sync default month
   await syncAll(year, defaultMonth, force);
+  rebuildFTS();
 }
 
 main().catch(console.error).finally(() => sqlite.close());
