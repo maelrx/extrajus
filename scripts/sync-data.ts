@@ -5,8 +5,10 @@
  *
  * Usage:
  *   npx tsx scripts/sync-data.ts                         # Sync latest available month
- *   npx tsx scripts/sync-data.ts --year 2024 --month 1   # Sync specific month
- *   npx tsx scripts/sync-data.ts --seed                  # Seed with mock data (dev only)
+ *   npx tsx scripts/sync-data.ts --year 2024             # Sync all 12 months of 2024
+ *   npx tsx scripts/sync-data.ts --year 2024 --month 6  # Sync specific month
+ *   npx tsx scripts/sync-data.ts --all                  # Sync from 2024 to current month
+ *   npx tsx scripts/sync-data.ts --seed                 # Seed with mock data (dev only)
  *   npx tsx scripts/sync-data.ts --force                 # Re-sync even if data exists
  */
 
@@ -586,11 +588,50 @@ async function main() {
 
   const force = args.includes("--force");
 
-  // --all: sync all months from Jan 2024 to current
-  if (args.includes("--all")) {
-    const startYear = 2024;
+  const yearIdx = args.indexOf("--year");
+  const monthIdx = args.indexOf("--month");
+  const allIdx = args.indexOf("--all");
+
+  const now = new Date();
+  // Default to 3 months ago (recent months often lack data)
+  const defaultDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  const defaultYear = defaultDate.getFullYear();
+  const defaultMonth = defaultDate.getMonth() + 1;
+
+  const hasYear = yearIdx >= 0 && !isNaN(parseInt(args[yearIdx + 1], 10));
+  const hasMonth = monthIdx >= 0 && !isNaN(parseInt(args[monthIdx + 1], 10));
+  const year = hasYear ? parseInt(args[yearIdx + 1], 10) : defaultYear;
+
+  if (year < 2018 || year > 2030) {
+    console.error(`Invalid year: ${args[yearIdx + 1]}. Must be between 2018 and 2030.`);
+    process.exit(1);
+  }
+
+  // --year 2024 without --month: sync all 12 months of that year
+  if (hasYear && !hasMonth) {
+    console.log(`\nSyncing all 12 months of ${year}...\n`);
+    for (let m = 1; m <= 12; m++) {
+      await syncAll(year, m, force);
+    }
+    console.log(`\n--- Full Year Sync Complete ---\n`);
+    return;
+  }
+
+  // --year 2024 --month 6: sync single month
+  if (hasMonth) {
+    const month = parseInt(args[monthIdx + 1], 10);
+    if (isNaN(month) || month < 1 || month > 12) {
+      console.error(`Invalid month: ${args[monthIdx + 1]}. Must be between 1 and 12.`);
+      process.exit(1);
+    }
+    await syncAll(year, month, force);
+    return;
+  }
+
+  // --all: sync from start to current (respect --year if provided)
+  if (allIdx >= 0) {
+    const startYear = hasYear ? year : 2024;
     const startMonth = 1;
-    const now = new Date();
     const endYear = now.getFullYear();
     const endMonth = now.getMonth() + 1;
 
@@ -604,28 +645,8 @@ async function main() {
     return;
   }
 
-  const yearIdx = args.indexOf("--year");
-  const monthIdx = args.indexOf("--month");
-
-  const now = new Date();
-  // Default to 3 months ago (recent months often lack data)
-  const defaultDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-  const defaultYear = defaultDate.getFullYear();
-  const defaultMonth = defaultDate.getMonth() + 1;
-
-  const year = yearIdx >= 0 ? parseInt(args[yearIdx + 1], 10) : defaultYear;
-  const month = monthIdx >= 0 ? parseInt(args[monthIdx + 1], 10) : defaultMonth;
-
-  if (isNaN(year) || year < 2018 || year > 2030) {
-    console.error(`Invalid year: ${args[yearIdx + 1]}. Must be between 2018 and 2030.`);
-    process.exit(1);
-  }
-  if (isNaN(month) || month < 1 || month > 12) {
-    console.error(`Invalid month: ${args[monthIdx + 1]}. Must be between 1 and 12.`);
-    process.exit(1);
-  }
-
-  await syncAll(year, month, force);
+  // No flags: sync default month
+  await syncAll(year, defaultMonth, force);
 }
 
 main().catch(console.error).finally(() => sqlite.close());
