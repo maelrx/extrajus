@@ -11,8 +11,21 @@ import { TETO_CONSTITUCIONAL, type Cargo } from "@/lib/constants";
 export type { Member } from "./mock-data";
 export { getKPIs } from "./mock-data";
 
-const _cache = new Map<string, { members: Member[]; timestamp: number }>();
+// Generic in-memory cache — avoids redundant DB reads across
+// multiple Server Component renders within the same process.
+const _cache = new Map<string, { data: unknown; timestamp: number }>();
 const CACHE_TTL = 60_000; // 1 minute
+
+function cached<T>(key: string, fn: () => T): T {
+  const now = Date.now();
+  const entry = _cache.get(key);
+  if (entry && now - entry.timestamp < CACHE_TTL) {
+    return entry.data as T;
+  }
+  const data = fn();
+  _cache.set(key, { data, timestamp: now });
+  return data;
+}
 
 function rowToMember(row: Record<string, unknown>): Member {
   return {
@@ -95,24 +108,16 @@ function loadFromDB(mesReferencia?: string): Member[] | null {
  * Cached for 1 minute to avoid repeated DB reads during rendering.
  */
 export function getMembers(mesReferencia?: string): Member[] {
-  const cacheKey = mesReferencia || "__latest__";
-  const now = Date.now();
-  const cached = _cache.get(cacheKey);
-  if (cached && now - cached.timestamp < CACHE_TTL) {
-    return cached.members;
-  }
+  const cacheKey = `members:${mesReferencia || "__latest__"}`;
+  return cached(cacheKey, () => {
+    const dbMembers = loadFromDB(mesReferencia);
+    if (dbMembers && dbMembers.length > 0) return dbMembers;
 
-  const dbMembers = loadFromDB(mesReferencia);
-  if (dbMembers && dbMembers.length > 0) {
-    _cache.set(cacheKey, { members: dbMembers, timestamp: now });
-    return dbMembers;
-  }
-
-  // Fallback to mock data
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { mockMembers } = require("./mock-data");
-  _cache.set(cacheKey, { members: mockMembers, timestamp: now });
-  return mockMembers;
+    // Fallback to mock data
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { mockMembers } = require("./mock-data");
+    return mockMembers as Member[];
+  });
 }
 
 /**
@@ -120,33 +125,35 @@ export function getMembers(mesReferencia?: string): Member[] {
  * sorted from newest to oldest.
  */
 export function getAvailableMonths(): { value: string; label: string }[] {
-  try {
-    const db = openDB();
-    if (!db) return [];
+  return cached("availableMonths", () => {
+    try {
+      const db = openDB();
+      if (!db) return [];
 
-    const rows = db
-      .prepare(
-        "SELECT DISTINCT mes_referencia FROM membros ORDER BY mes_referencia DESC"
-      )
-      .all() as { mes_referencia: string }[];
+      const rows = db
+        .prepare(
+          "SELECT DISTINCT mes_referencia FROM membros ORDER BY mes_referencia DESC"
+        )
+        .all() as { mes_referencia: string }[];
 
-    db.close();
+      db.close();
 
-    const monthNames = [
-      "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
-      "Jul", "Ago", "Set", "Out", "Nov", "Dez",
-    ];
+      const monthNames = [
+        "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+        "Jul", "Ago", "Set", "Out", "Nov", "Dez",
+      ];
 
-    return rows.map((r) => {
-      const [year, month] = r.mes_referencia.split("-");
-      return {
-        value: r.mes_referencia,
-        label: `${monthNames[parseInt(month) - 1]}/${year}`,
-      };
-    });
-  } catch {
-    return [];
-  }
+      return rows.map((r) => {
+        const [year, month] = r.mes_referencia.split("-");
+        return {
+          value: r.mes_referencia,
+          label: `${monthNames[parseInt(month) - 1]}/${year}`,
+        };
+      });
+    } catch {
+      return [];
+    }
+  });
 }
 
 /**
@@ -154,25 +161,27 @@ export function getAvailableMonths(): { value: string; label: string }[] {
  * sorted from newest to oldest.
  */
 export function getAvailableYears(): { value: string; label: string }[] {
-  try {
-    const db = openDB();
-    if (!db) return [];
+  return cached("availableYears", () => {
+    try {
+      const db = openDB();
+      if (!db) return [];
 
-    const rows = db
-      .prepare(
-        "SELECT DISTINCT ano_referencia FROM membros ORDER BY ano_referencia DESC"
-      )
-      .all() as { ano_referencia: number }[];
+      const rows = db
+        .prepare(
+          "SELECT DISTINCT ano_referencia FROM membros ORDER BY ano_referencia DESC"
+        )
+        .all() as { ano_referencia: number }[];
 
-    db.close();
+      db.close();
 
-    return rows.map((r) => ({
-      value: String(r.ano_referencia),
-      label: String(r.ano_referencia),
-    }));
-  } catch {
-    return [];
-  }
+      return rows.map((r) => ({
+        value: String(r.ano_referencia),
+        label: String(r.ano_referencia),
+      }));
+    } catch {
+      return [];
+    }
+  });
 }
 
 /**
@@ -180,38 +189,40 @@ export function getAvailableYears(): { value: string; label: string }[] {
  * sums all monthly values across that year.
  */
 export function getMembersByYear(year: string): Member[] {
-  try {
-    const db = openDB();
-    if (!db) return [];
+  return cached(`membersByYear:${year}`, () => {
+    try {
+      const db = openDB();
+      if (!db) return [];
 
-    const rows = db
-      .prepare(
-        `SELECT
-          nome, cargo, orgao, estado,
-          SUM(remuneracao_base) as remuneracao_base,
-          SUM(verbas_indenizatorias) as verbas_indenizatorias,
-          SUM(direitos_eventuais) as direitos_eventuais,
-          SUM(direitos_pessoais) as direitos_pessoais,
-          SUM(remuneracao_total) as remuneracao_total,
-          SUM(acima_teto) as acima_teto,
-          AVG(percentual_acima_teto) as percentual_acima_teto
-        FROM membros
-        WHERE ano_referencia = ?
-        GROUP BY nome, orgao
-        ORDER BY remuneracao_total DESC`
-      )
-      .all(parseInt(year)) as Record<string, unknown>[];
+      const rows = db
+        .prepare(
+          `SELECT
+            nome, cargo, orgao, estado,
+            SUM(remuneracao_base) as remuneracao_base,
+            SUM(verbas_indenizatorias) as verbas_indenizatorias,
+            SUM(direitos_eventuais) as direitos_eventuais,
+            SUM(direitos_pessoais) as direitos_pessoais,
+            SUM(remuneracao_total) as remuneracao_total,
+            SUM(acima_teto) as acima_teto,
+            AVG(percentual_acima_teto) as percentual_acima_teto
+          FROM membros
+          WHERE ano_referencia = ?
+          GROUP BY nome, orgao
+          ORDER BY remuneracao_total DESC`
+        )
+        .all(parseInt(year)) as Record<string, unknown>[];
 
-    db.close();
+      db.close();
 
-    if (rows.length === 0) return [];
-    return rows.map((row, i) => ({
-      ...rowToMember(row),
-      id: i + 1,
-    }));
-  } catch {
-    return [];
-  }
+      if (rows.length === 0) return [];
+      return rows.map((row, i) => ({
+        ...rowToMember(row),
+        id: i + 1,
+      }));
+    } catch {
+      return [];
+    }
+  });
 }
 
 /**
@@ -228,24 +239,26 @@ export function getDataMonth(mesReferencia?: string): string {
     return `${monthNames[parseInt(month) - 1]}/${year}`;
   }
 
-  try {
-    const db = openDB();
-    if (!db) return "Jun/2025";
+  return cached("dataMonth", () => {
+    try {
+      const db = openDB();
+      if (!db) return "Jun/2025";
 
-    const result = db
-      .prepare(
-        "SELECT mes_referencia FROM membros ORDER BY mes_referencia DESC LIMIT 1"
-      )
-      .get() as { mes_referencia: string } | undefined;
-    db.close();
+      const result = db
+        .prepare(
+          "SELECT mes_referencia FROM membros ORDER BY mes_referencia DESC LIMIT 1"
+        )
+        .get() as { mes_referencia: string } | undefined;
+      db.close();
 
-    if (!result) return "Jun/2025";
+      if (!result) return "Jun/2025";
 
-    const [year, month] = result.mes_referencia.split("-");
-    return `${monthNames[parseInt(month) - 1]}/${year}`;
-  } catch {
-    return "Jun/2025";
-  }
+      const [year, month] = result.mes_referencia.split("-");
+      return `${monthNames[parseInt(month) - 1]}/${year}`;
+    } catch {
+      return "Jun/2025";
+    }
+  });
 }
 
 export interface Anomalia {
@@ -266,17 +279,18 @@ export interface Anomalia {
  * Uses LAG window function for efficiency.
  */
 export function getAnomalias(ano: number, minVariacaoPct = 200): Anomalia[] {
-  try {
-    const db = openDB();
-    if (!db) return [];
+  return cached(`anomalias:${ano}:${minVariacaoPct}`, () => {
+    try {
+      const db = openDB();
+      if (!db) return [];
 
-    const anoAnterior = ano - 1;
-    const anoStr = String(ano);
-    const multiplicador = 1 + minVariacaoPct / 100;
+      const anoAnterior = ano - 1;
+      const anoStr = String(ano);
+      const multiplicador = 1 + minVariacaoPct / 100;
 
-    const rows = db
-      .prepare(
-        `WITH ordered AS (
+      const rows = db
+        .prepare(
+          `WITH ordered AS (
           SELECT
             nome, cargo, orgao, estado,
             mes_referencia,
@@ -304,22 +318,23 @@ export function getAnomalias(ano: number, minVariacaoPct = 200): Anomalia[] {
       )
       .all(ano, anoAnterior, anoStr, multiplicador) as Record<string, unknown>[];
 
-    db.close();
+      db.close();
 
-    return rows.map((r) => ({
-      nome: r.nome as string,
-      cargo: r.cargo as string,
-      orgao: r.orgao as string,
-      estado: r.estado as string,
-      mesAnterior: r.mes_anterior as string,
-      mesAtual: r.mes_atual as string,
-      totalAnterior: r.total_anterior as number,
-      totalAtual: r.total_atual as number,
-      variacaoAbs: r.variacao_abs as number,
-      variacaoPct: r.variacao_pct as number,
-    }));
-  } catch (err) {
-    console.error("getAnomalias error:", err);
-    return [];
-  }
+      return rows.map((r) => ({
+        nome: r.nome as string,
+        cargo: r.cargo as string,
+        orgao: r.orgao as string,
+        estado: r.estado as string,
+        mesAnterior: r.mes_anterior as string,
+        mesAtual: r.mes_atual as string,
+        totalAnterior: r.total_anterior as number,
+        totalAtual: r.total_atual as number,
+        variacaoAbs: r.variacao_abs as number,
+        variacaoPct: r.variacao_pct as number,
+      }));
+    } catch (err) {
+      console.error("getAnomalias error:", err);
+      return [];
+    }
+  });
 }
