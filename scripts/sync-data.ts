@@ -584,19 +584,30 @@ async function syncAll(year: number, month: number, force: boolean) {
   console.log(`Month: ${mesRef}\n`);
 }
 
+function freshDb() {
+  sqlite.exec(`
+    DELETE FROM historico_mensal;
+    DELETE FROM membros;
+    DELETE FROM sync_log;
+  `);
+  sqlite.exec(`INSERT INTO membros_fts(membros_fts) VALUES('rebuild')`);
+  console.log("Database cleared.");
+}
+
 function rebuildFTS() {
   console.log("Rebuilding FTS index...");
-  sqlite.exec(`
-    DELETE FROM membros_fts;
-    INSERT INTO membros_fts(rowid, nome, cargo, orgao)
-      SELECT id, nome, cargo, orgao FROM membros;
-  `);
+  sqlite.exec(`INSERT INTO membros_fts(membros_fts) VALUES('rebuild')`);
   console.log("FTS index rebuilt.\n");
 }
 
 // CLI
 async function main() {
   const args = process.argv.slice(2);
+
+  if (args.includes("--fresh")) {
+    freshDb();
+    return;
+  }
 
   if (args.includes("--seed")) {
     await seedWithMockData();

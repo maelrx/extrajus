@@ -41,8 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 # database (WAL/SHM são temporários, o .db é commitado pelo cron-sync)
-/data/*.db-wal
-/data/*.db-shm
+/data/*
 
 # playwright
 /test-results/
