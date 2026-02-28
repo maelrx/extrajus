@@ -76,7 +76,7 @@ export function BrazilMap({ stateStats, metric, onStateClick }: BrazilMapProps) 
           const value = stats ? stats[metric] : 0;
           const colorClass = stats
             ? getColorIntensity(value, min, max)
-            : "bg-gray-100";
+            : "bg-surface";
 
           return (
             <button
@@ -100,16 +100,16 @@ export function BrazilMap({ stateStats, metric, onStateClick }: BrazilMapProps) 
 
       {/* Tooltip */}
       {hoveredStats && (
-        <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-gray-200 bg-white p-3 text-xs shadow-lg">
-          <p className="font-bold text-navy">{hoveredStats.estado}</p>
-          <p className="text-gray-500">
+        <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-full rounded-lg border border-border bg-card p-3 text-xs shadow-lg">
+          <p className="font-bold text-foreground">{hoveredStats.estado}</p>
+          <p className="text-muted">
             {formatNumber(hoveredStats.totalMembros)} membros &middot;{" "}
             {formatNumber(hoveredStats.membrosAcimaTeto)} acima do teto
           </p>
           <p className="mt-1 font-semibold text-red-primary">
             Total acima: {formatCurrency(hoveredStats.totalAcimaTeto)}/mês
           </p>
-          <p className="text-gray-500">
+          <p className="text-muted">
             {formatPercent(hoveredStats.percentualAcimaTeto)} acima do teto
           </p>
         </div>
@@ -117,13 +117,13 @@ export function BrazilMap({ stateStats, metric, onStateClick }: BrazilMapProps) 
 
       {/* Legend */}
       <div className="mt-4 flex items-center justify-center gap-1">
-        <span className="text-[10px] text-gray-400">Menor</span>
+        <span className="text-[10px] text-muted">Menor</span>
         {["bg-red-100", "bg-red-200", "bg-red-300", "bg-red-400", "bg-red-500", "bg-red-600", "bg-red-700"].map(
           (c) => (
             <div key={c} className={`h-3 w-6 rounded-sm ${c}`} />
           )
         )}
-        <span className="text-[10px] text-gray-400">Maior</span>
+        <span className="text-[10px] text-muted">Maior</span>
       </div>
     </div>
   );
