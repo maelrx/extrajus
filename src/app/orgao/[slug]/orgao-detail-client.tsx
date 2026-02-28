@@ -43,17 +43,17 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="mx-auto max-w-md text-center">
           <Info className="mx-auto mb-4 h-10 w-10 text-amber-500" />
-          <h1 className="font-serif text-2xl font-bold text-navy">
+          <h1 className="font-serif text-2xl font-bold text-foreground">
             Dados indisponíveis para {slug} em {currentYear}
           </h1>
-          <p className="mt-3 text-sm text-gray-500">
-            O <a href="https://dadosjusbr.org" target="_blank" rel="noopener noreferrer" className="font-medium text-navy underline hover:text-red-primary">DadosJusBr</a> não
+          <p className="mt-3 text-sm text-muted">
+            O <a href="https://dadosjusbr.org" target="_blank" rel="noopener noreferrer" className="font-medium text-foreground underline hover:text-red-primary">DadosJusBr</a> não
             possui dados deste órgão para o ano selecionado. Tente outro ano ou volte à lista de órgãos.
           </p>
           <div className="mt-5 flex items-center justify-center gap-3">
             <Link
               href={`/orgao?ano=${currentYear}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-navy shadow-sm hover:bg-surface"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-surface"
             >
               <ArrowLeft className="h-4 w-4" />
               Todos os órgãos
@@ -62,7 +62,7 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
               <select
                 value={currentYear}
                 onChange={(e) => router.push(`/orgao/${encodeURIComponent(slug)}?ano=${e.target.value}`)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-navy shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+                className="rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
               >
                 {availableYears.map((y) => (
                   <option key={y.value} value={y.value}>{y.label}</option>
@@ -111,7 +111,7 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Link
           href={`/orgao?ano=${currentYear}`}
-          className="mb-6 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-navy"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Todos os órgãos
@@ -121,19 +121,19 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
           <div className="flex items-center gap-3">
             <Building2 className="h-7 w-7 text-navy" />
             <div>
-              <h1 className="font-serif text-2xl font-bold text-navy sm:text-3xl">
+              <h1 className="font-serif text-2xl font-bold text-foreground sm:text-3xl">
                 {orgaoStats.orgao}
               </h1>
-              <p className="text-sm text-gray-500">{orgaoStats.estado}</p>
+              <p className="text-sm text-muted">{orgaoStats.estado}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-500">Ano:</span>
+              <span className="text-xs font-medium text-muted">Ano:</span>
               <select
                 value={currentYear}
                 onChange={(e) => router.push(`/orgao/${encodeURIComponent(slug)}?ano=${e.target.value}`)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-navy shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+                className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
               >
                 {availableYears.map((y) => (
                   <option key={y.value} value={y.value}>
@@ -150,71 +150,71 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
         </div>
 
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <Users className="h-4 w-4 text-blue-500" />
-              <span className="text-[11px] text-gray-400">Total Membros</span>
+              <span className="text-[11px] text-muted">Total Membros</span>
             </div>
-            <p className="text-xl font-bold text-navy">
+            <p className="text-xl font-bold text-foreground">
               {formatNumber(orgaoStats.totalMembros)}
             </p>
           </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <TrendingUp className="h-4 w-4 text-red-500" />
-              <span className="text-[11px] text-gray-400">Acima do Teto</span>
+              <span className="text-[11px] text-muted">Acima do Teto</span>
             </div>
             <p className="text-xl font-bold text-red-primary">
               {formatNumber(orgaoStats.membrosAcimaTeto)}
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-muted">
               {formatPercent(orgaoStats.percentualAcimaTeto)}
             </p>
           </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <BarChart3 className="h-4 w-4 text-amber" />
-              <span className="text-[11px] text-gray-400">Total Acima do Teto (ano)</span>
+              <span className="text-[11px] text-muted">Total Acima do Teto (ano)</span>
             </div>
             <p className="text-xl font-bold text-red-primary">
               {formatCurrency(orgaoStats.totalAcimaTeto)}
             </p>
           </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <BarChart3 className="h-4 w-4 text-navy" />
-              <span className="text-[11px] text-gray-400">Média Acima (ano)</span>
+              <span className="text-[11px] text-muted">Média Acima (ano)</span>
             </div>
-            <p className="text-xl font-bold text-navy">
+            <p className="text-xl font-bold text-foreground">
               {formatCurrency(orgaoStats.mediaAcimaTeto)}
             </p>
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
-            <h2 className="mb-3 font-serif text-base font-bold text-navy">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+            <h2 className="mb-3 font-serif text-base font-bold text-foreground">
               Top 15 Remunerações
-              <span className="ml-2 text-xs font-normal text-gray-400">(acumulado {currentYear})</span>
+              <span className="ml-2 text-xs font-normal text-muted">(acumulado {currentYear})</span>
             </h2>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 10 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis
                     type="number"
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
+                    tick={{ fontSize: 10, fill: "var(--muted)" }}
                     tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
                   />
                   <YAxis
                     type="category"
                     dataKey="nome"
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
+                    tick={{ fontSize: 10, fill: "var(--muted)" }}
                     width={90}
                   />
                   <Tooltip
                     formatter={(value) => formatCurrency(Number(value))}
-                    contentStyle={{ fontSize: 12 }}
+                    contentStyle={{ fontSize: 12, backgroundColor: "var(--card)", borderColor: "var(--border)" }}
                   />
                   <ReferenceLine
                     x={TETO_CONSTITUCIONAL * 12}
@@ -237,12 +237,12 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
         </div>
 
         {isFederalMP && stateBreakdown.length > 1 && (
-          <div className="mt-6 rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
-            <h2 className="mb-3 font-serif text-base font-bold text-navy">
+          <div className="mt-6 rounded-lg border border-border bg-card p-4 shadow-sm">
+            <h2 className="mb-3 font-serif text-base font-bold text-foreground">
               <span className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-red-primary" />
                 Distribuição por Estado
-                <span className="text-xs font-normal text-gray-400">(baseado na lotação)</span>
+                <span className="text-xs font-normal text-muted">(baseado na lotação)</span>
               </span>
             </h2>
             <div className="h-[28rem]">
@@ -252,22 +252,22 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
                   layout="vertical"
                   margin={{ left: 5, right: 10 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                   <XAxis
                     type="number"
-                    tick={{ fontSize: 10, fill: "#94A3B8" }}
+                    tick={{ fontSize: 10, fill: "var(--muted)" }}
                     tickFormatter={(v) => formatCurrency(v)}
                   />
                   <YAxis
                     type="category"
                     dataKey="estado"
-                    tick={{ fontSize: 11, fill: "#1e293b", fontWeight: 600 }}
+                    tick={{ fontSize: 11, fill: "var(--foreground)", fontWeight: 600 }}
                     width={35}
                   />
                   <Tooltip
                     formatter={(value) => formatCurrency(Number(value))}
                     labelFormatter={(label) => `Estado: ${label}`}
-                    contentStyle={{ fontSize: 12 }}
+                    contentStyle={{ fontSize: 12, backgroundColor: "var(--card)", borderColor: "var(--border)" }}
                   />
                   <Bar dataKey="totalAcima" fill="#DC2626" name="Total acima do teto" radius={[0, 4, 4, 0]} />
                 </BarChart>
@@ -276,7 +276,7 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
             <div className="mt-3 overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 text-left text-[11px] uppercase tracking-wider text-gray-400">
+                  <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted">
                     <th className="pb-2 pr-4">UF</th>
                     <th className="pb-2 pr-4 text-right">Membros</th>
                     <th className="pb-2 pr-4 text-right">Acima do teto</th>
@@ -285,10 +285,10 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
                 </thead>
                 <tbody>
                   {stateBreakdown.map((s) => (
-                    <tr key={s.estado} className="border-b border-gray-50">
-                      <td className="py-1.5 pr-4 font-semibold text-navy">{s.estado}</td>
-                      <td className="py-1.5 pr-4 text-right text-xs text-gray-500">{formatNumber(s.membros)}</td>
-                      <td className="py-1.5 pr-4 text-right text-xs text-gray-500">
+                    <tr key={s.estado} className="border-b border-border">
+                      <td className="py-1.5 pr-4 font-semibold text-foreground">{s.estado}</td>
+                      <td className="py-1.5 pr-4 text-right text-xs text-muted">{formatNumber(s.membros)}</td>
+                      <td className="py-1.5 pr-4 text-right text-xs text-muted">
                         {formatNumber(s.acimaTeto)} ({formatPercent((s.acimaTeto / s.membros) * 100)})
                       </td>
                       <td className="py-1.5 text-right text-xs font-semibold text-red-primary">
@@ -302,15 +302,15 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
           </div>
         )}
 
-        <div className="mt-6 rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="mt-6 rounded-lg border border-border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-serif text-base font-bold text-navy">
+            <h2 className="font-serif text-base font-bold text-foreground">
               Membros do {orgaoStats.orgao}
-              <span className="ml-2 text-xs font-normal text-gray-400">(acumulado {currentYear})</span>
+              <span className="ml-2 text-xs font-normal text-muted">(acumulado {currentYear})</span>
             </h2>
             <Link
               href={`/?orgao=${encodeURIComponent(orgaoStats.orgao)}`}
-              className="text-xs font-medium text-navy hover:underline"
+              className="text-xs font-medium text-foreground hover:underline"
             >
               Ver no ranking completo
             </Link>
@@ -318,7 +318,7 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-left text-[11px] uppercase tracking-wider text-gray-400">
+                <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted">
                   <th className="pb-2 pr-4">#</th>
                   <th className="pb-2 pr-4">Nome</th>
                   <th className="pb-2 pr-4">Cargo</th>
@@ -330,27 +330,27 @@ export function OrgaoDetailClient({ members, availableYears, currentYear }: Orga
               </thead>
               <tbody>
                 {topMembers.map((m, i) => (
-                  <tr key={m.id} className="border-b border-gray-50">
-                    <td className="py-2 pr-4 text-xs text-gray-400">{i + 1}</td>
-                    <td className="py-2 pr-4 font-medium text-navy">
+                  <tr key={m.id} className="border-b border-border">
+                    <td className="py-2 pr-4 text-xs text-muted">{i + 1}</td>
+                    <td className="py-2 pr-4 font-medium text-foreground">
                       <span className="flex items-center gap-1.5">
                         {m.nome}
                         {m.remuneracaoBase === 0 && (
                           <span
                             title="Remuneração base informada como R$ 0,00 no DadosJusBr"
-                            className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5 text-[9px] font-semibold text-amber-700"
+                            className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1 py-0.5 text-[9px] font-semibold text-amber-700 dark:bg-amber-900 dark:text-amber-300"
                           >
                             Base R$ 0
                           </span>
                         )}
                       </span>
                     </td>
-                    <td className="py-2 pr-4 text-xs text-gray-500">{m.cargo}</td>
-                    {isFederalMP && <td className="py-2 pr-4 text-xs font-medium text-gray-500">{m.estado}</td>}
+                    <td className="py-2 pr-4 text-xs text-muted">{m.cargo}</td>
+                    {isFederalMP && <td className="py-2 pr-4 text-xs font-medium text-muted">{m.estado}</td>}
                     <td className="py-2 pr-4 text-right text-xs">
                       {formatCurrencyFull(m.remuneracaoBase)}
                     </td>
-                    <td className="py-2 pr-4 text-right text-xs font-semibold text-navy">
+                    <td className="py-2 pr-4 text-right text-xs font-semibold text-foreground">
                       {formatCurrencyFull(m.remuneracaoTotal)}
                     </td>
                     <td className="py-2 text-right text-xs font-semibold text-red-primary">

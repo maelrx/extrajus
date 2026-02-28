@@ -41,28 +41,28 @@ export default function ApiDocsPage() {
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-navy"
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar ao ranking
         </Link>
 
         <div className="mb-8 flex items-center gap-3">
-          <Code2 className="h-6 w-6 text-navy" />
+          <Code2 className="h-6 w-6 text-foreground" />
           <div>
-            <h1 className="font-serif text-3xl font-bold text-navy">API Pública</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="font-serif text-3xl font-bold text-foreground">API Pública</h1>
+            <p className="text-sm text-muted">
               Acesse os dados do ExtraTeto programaticamente. Uso livre para fins de pesquisa e jornalismo.
             </p>
           </div>
         </div>
 
-        <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+        <div className="mb-8 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/30 dark:bg-amber-950 dark:text-amber-200">
           <strong>Base URL:</strong>{" "}
-          <code className="rounded bg-amber-100 px-1.5 py-0.5 text-xs">
+          <code className="rounded bg-amber-100 px-1.5 py-0.5 text-xs dark:bg-amber-900">
             https://extrateto.org/api/v1
           </code>
-          <p className="mt-1 text-xs text-amber-600">
+          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
             A API retorna JSON. Não requer autenticação. Rate limit: 100 requests/minuto.
           </p>
         </div>
@@ -71,24 +71,24 @@ export default function ApiDocsPage() {
           {endpoints.map((ep) => (
             <div
               key={ep.path}
-              className="rounded-lg border border-gray-100 bg-white p-5 shadow-sm"
+              className="rounded-lg border border-border bg-card p-5 shadow-sm"
             >
               <div className="mb-3 flex items-center gap-2">
-                <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
+                <span className="rounded bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700 dark:bg-green-900 dark:text-green-300">
                   {ep.method}
                 </span>
-                <code className="text-sm font-medium text-navy">{ep.path}</code>
+                <code className="text-sm font-medium text-foreground">{ep.path}</code>
               </div>
-              <p className="mb-4 text-sm text-gray-600">{ep.description}</p>
+              <p className="mb-4 text-sm text-muted">{ep.description}</p>
 
               {ep.params.length > 0 && (
                 <>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
                     Parâmetros
                   </h3>
                   <table className="mb-4 w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 text-left text-[11px] text-gray-400">
+                      <tr className="border-b border-border text-left text-[11px] text-muted">
                         <th className="pb-1 pr-4">Nome</th>
                         <th className="pb-1 pr-4">Tipo</th>
                         <th className="pb-1">Descrição</th>
@@ -96,16 +96,16 @@ export default function ApiDocsPage() {
                     </thead>
                     <tbody>
                       {ep.params.map((p) => (
-                        <tr key={p.name} className="border-b border-gray-50">
+                        <tr key={p.name} className="border-b border-border">
                           <td className="py-1.5 pr-4">
-                            <code className="rounded bg-surface px-1 text-xs text-navy">
+                            <code className="rounded bg-surface px-1 text-xs text-foreground">
                               {p.name}
                             </code>
                           </td>
-                          <td className="py-1.5 pr-4 text-xs text-gray-500">
+                          <td className="py-1.5 pr-4 text-xs text-muted">
                             {p.type}
                           </td>
-                          <td className="py-1.5 text-xs text-gray-600">
+                          <td className="py-1.5 text-xs text-muted">
                             {p.desc}
                           </td>
                         </tr>
@@ -135,8 +135,8 @@ export default function ApiDocsPage() {
           ))}
         </div>
 
-        <div className="mt-8 rounded-lg border border-gray-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 font-serif text-lg font-bold text-navy">
+        <div className="mt-8 rounded-lg border border-border bg-card p-5 shadow-sm">
+          <h2 className="mb-3 font-serif text-lg font-bold text-foreground">
             Formato de Resposta
           </h2>
           <div className="rounded-md bg-gray-900 p-3">

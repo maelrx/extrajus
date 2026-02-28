@@ -8,15 +8,15 @@ export default function SobrePage() {
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-navy"
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar ao ranking
         </Link>
 
-        <h1 className="font-serif text-3xl font-bold text-navy">Sobre o ExtraTeto</h1>
+        <h1 className="font-serif text-3xl font-bold text-foreground">Sobre o ExtraTeto</h1>
 
-        <div className="mt-8 space-y-6 text-sm leading-relaxed text-gray-700">
+        <div className="mt-8 space-y-6 text-sm leading-relaxed text-foreground">
           <p>
             O <strong>ExtraTeto</strong> é uma ferramenta de fiscalização cidadã que transforma
             dados públicos dispersos sobre remunerações do sistema de Justiça brasileiro em
@@ -38,7 +38,7 @@ export default function SobrePage() {
           </p>
 
           <section>
-            <h2 className="mt-8 font-serif text-xl font-bold text-navy">O que NÃO somos</h2>
+            <h2 className="mt-8 font-serif text-xl font-bold text-foreground">O que NÃO somos</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5">
               <li>Não somos um órgão oficial do governo</li>
               <li>Não fazemos juízo de valor sobre a legalidade das remunerações</li>
@@ -48,14 +48,14 @@ export default function SobrePage() {
           </section>
 
           <section>
-            <h2 className="mt-8 font-serif text-xl font-bold text-navy">Créditos</h2>
+            <h2 className="mt-8 font-serif text-xl font-bold text-foreground">Créditos</h2>
             <p className="mt-2">
               Este projeto é inspirado e utiliza dados do{" "}
               <a
                 href="https://dadosjusbr.org"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-navy underline"
+                className="font-medium text-foreground underline hover:text-red-primary"
               >
                 DadosJusBr
               </a>
@@ -65,7 +65,7 @@ export default function SobrePage() {
           </section>
 
           <section>
-            <h2 className="mt-8 font-serif text-xl font-bold text-navy">Contato</h2>
+            <h2 className="mt-8 font-serif text-xl font-bold text-foreground">Contato</h2>
             <p className="mt-2">
               Encontrou um erro nos dados? Tem sugestões? Entre em contato pelo email{" "}
               <strong>contato@extrateto.org</strong>.

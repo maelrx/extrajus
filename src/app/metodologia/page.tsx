@@ -8,20 +8,20 @@ export default function MetodologiaPage() {
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
         <Link
           href="/"
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-navy"
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Voltar ao ranking
         </Link>
 
-        <h1 className="font-serif text-3xl font-bold text-navy">Metodologia</h1>
-        <p className="mt-2 text-sm text-gray-500">
+        <h1 className="font-serif text-3xl font-bold text-foreground">Metodologia</h1>
+        <p className="mt-2 text-sm text-muted">
           Como os dados são coletados, processados e apresentados.
         </p>
 
-        <div className="mt-8 space-y-8 text-sm leading-relaxed text-gray-700">
+        <div className="mt-8 space-y-8 text-sm leading-relaxed text-foreground">
           <section>
-            <h2 className="font-serif text-xl font-bold text-navy">Fontes de Dados</h2>
+            <h2 className="font-serif text-xl font-bold text-foreground">Fontes de Dados</h2>
             <p className="mt-2">
               Os dados exibidos no ExtraTeto são obtidos de fontes públicas oficiais,
               disponibilizadas em cumprimento à Lei de Acesso à Informação (Lei 12.527/2011).
@@ -44,7 +44,7 @@ export default function MetodologiaPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-bold text-navy">Teto Constitucional</h2>
+            <h2 className="font-serif text-xl font-bold text-foreground">Teto Constitucional</h2>
             <p className="mt-2">
               O teto remuneratório do funcionalismo público brasileiro é definido pelo
               Art. 37, XI da Constituição Federal como o subsídio mensal dos Ministros do
@@ -57,7 +57,7 @@ export default function MetodologiaPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-bold text-navy">Cálculos</h2>
+            <h2 className="font-serif text-xl font-bold text-foreground">Cálculos</h2>
             <ul className="mt-2 list-disc space-y-2 pl-5">
               <li>
                 <strong>Remuneração Total</strong> = Remuneração Base + Verbas Indenizatórias
@@ -77,16 +77,16 @@ export default function MetodologiaPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-bold text-navy">Cobertura dos Dados</h2>
+            <h2 className="font-serif text-xl font-bold text-foreground">Cobertura dos Dados</h2>
             <p className="mt-2">
               O ExtraTeto não cobre a totalidade dos órgãos do Judiciário e Ministério Público
               brasileiros. A disponibilidade depende de cada órgão publicar seus dados em formato
               acessível ao DadosJusBr.
             </p>
 
-            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <h3 className="font-semibold text-amber-900">Órgãos ausentes na base</h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-amber-800">
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/30 dark:bg-amber-950">
+              <h3 className="font-semibold text-amber-900 dark:text-amber-100">Órgãos ausentes na base</h3>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-amber-800 dark:text-amber-200">
                 <li>
                   <strong>Ministérios Públicos federais</strong>: MPF, MPT, MPM e MPDFT
                   não estão incluídos na base.
@@ -101,13 +101,13 @@ export default function MetodologiaPage() {
               </ul>
             </div>
 
-            <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-              <h3 className="font-semibold text-blue-900">Ativos e inativos</h3>
-              <p className="mt-1 text-blue-800">
+            <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/30 dark:bg-blue-950">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100">Ativos e inativos</h3>
+              <p className="mt-1 text-blue-800 dark:text-blue-200">
                 Os dados provêm das folhas de pagamento dos órgãos, que incluem membros
                 <strong> ativos, inativos (aposentados) e pensionistas</strong>. Isso significa que:
               </p>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-blue-800">
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-blue-800 dark:text-blue-200">
                 <li>
                   O número de <strong>desembargadores</strong> na base (~3.400) é significativamente
                   maior que o total de ativos no país (~1.600), pois inclui aposentados que
@@ -127,7 +127,7 @@ export default function MetodologiaPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-bold text-navy">Outras Limitações</h2>
+            <h2 className="font-serif text-xl font-bold text-foreground">Outras Limitações</h2>
             <ul className="mt-2 list-disc space-y-2 pl-5">
               <li>
                 Os dados originais podem conter erros de lançamento pelos próprios órgãos.
@@ -144,7 +144,7 @@ export default function MetodologiaPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-xl font-bold text-navy">Base Legal</h2>
+            <h2 className="font-serif text-xl font-bold text-foreground">Base Legal</h2>
             <ul className="mt-2 list-disc space-y-2 pl-5">
               <li>
                 Constituição Federal, Art. 37, XI — Teto remuneratório

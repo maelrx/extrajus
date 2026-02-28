@@ -65,15 +65,15 @@ function ChartTooltip({ active, payload, label }: Record<string, unknown>) {
   const breakdown = data.breakdown as { orgao: string; count: number }[] | null;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-2.5 shadow-lg">
-      <p className="mb-1 text-xs font-bold text-navy">{String(label)}</p>
-      <p className="text-xs text-gray-600">
+    <div className="rounded-lg border border-border bg-card p-2.5 shadow-lg">
+      <p className="mb-1 text-xs font-bold text-foreground">{String(label)}</p>
+      <p className="text-xs text-muted">
         {formatNumber(Number(data.count))} anomalia
         {Number(data.count) !== 1 ? "s" : ""}
       </p>
       {breakdown && breakdown.length > 0 && (
-        <div className="mt-1.5 border-t border-gray-100 pt-1.5">
-          <p className="mb-1 text-[10px] font-semibold text-gray-400">
+        <div className="mt-1.5 border-t border-border pt-1.5">
+          <p className="mb-1 text-[10px] font-semibold text-muted">
             Inclui:
           </p>
           <div className="max-h-32 space-y-0.5 overflow-y-auto">
@@ -82,8 +82,8 @@ function ChartTooltip({ active, payload, label }: Record<string, unknown>) {
                 key={b.orgao}
                 className="flex items-center justify-between gap-3 text-[10px]"
               >
-                <span className="truncate text-gray-600">{b.orgao}</span>
-                <span className="whitespace-nowrap font-medium text-navy">
+                <span className="truncate text-muted">{b.orgao}</span>
+                <span className="whitespace-nowrap font-medium text-foreground">
                   {b.count}
                 </span>
               </div>
@@ -188,18 +188,18 @@ export function AnomaliasClient({
               <h1 className="font-serif text-2xl font-bold text-navy sm:text-3xl">
                 Anomalias de Remuneração
               </h1>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted">
                 Variações atípicas entre meses consecutivos
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-500">Ano:</span>
+              <span className="text-xs font-medium text-muted">Ano:</span>
               <select
                 value={currentYear}
                 onChange={(e) => navigate(e.target.value, minVariacao)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-navy shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+                className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
               >
                 {availableYears.map((y) => (
                   <option key={y.value} value={y.value}>
@@ -209,7 +209,7 @@ export function AnomaliasClient({
               </select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-500">
+              <span className="text-xs font-medium text-muted">
                 Variação:
               </span>
               <select
@@ -217,7 +217,7 @@ export function AnomaliasClient({
                 onChange={(e) =>
                   navigate(currentYear, parseInt(e.target.value))
                 }
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-navy shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+                className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
               >
                 {VARIACAO_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
@@ -234,16 +234,16 @@ export function AnomaliasClient({
         </div>
 
         {/* Disclaimer */}
-        <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3.5">
+        <div className="mb-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3.5 dark:border-amber-900 dark:bg-amber-950">
           <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
           <div>
-            <p className="text-sm leading-relaxed text-amber-800">
+            <p className="text-sm leading-relaxed text-amber-800 dark:text-amber-200">
               <strong>Aviso:</strong> Esta ferramenta não faz juízo de valor. As
               variações listadas são apenas estatísticas e podem ter motivos
               legítimos, como pagamento de atrasados, exercício cumulativo de
               funções ou correções administrativas.
             </p>
-            <ul className="mt-1.5 list-disc pl-4 text-sm leading-relaxed text-amber-700">
+            <ul className="mt-1.5 list-disc pl-4 text-sm leading-relaxed text-amber-700 dark:text-amber-300">
               <li>
                 <strong>Dezembro e janeiro</strong> costumam concentrar picos
                 legítimos por acúmulo de 13º salário, férias, abonos e
@@ -255,28 +255,28 @@ export function AnomaliasClient({
 
         {/* Summary cards */}
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
-              <span className="text-[11px] text-gray-400">Anomalias</span>
+              <span className="text-[11px] text-muted">Anomalias</span>
             </div>
             <p className="text-xl font-bold text-amber-600">
               {formatNumber(anomalias.length)}
             </p>
           </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <Building2 className="h-4 w-4 text-blue-500" />
-              <span className="text-[11px] text-gray-400">Órgãos afetados</span>
+              <span className="text-[11px] text-muted">Órgãos afetados</span>
             </div>
-            <p className="text-xl font-bold text-navy">
+            <p className="text-xl font-bold text-foreground">
               {formatNumber(new Set(anomalias.map((a) => a.orgao)).size)}
             </p>
           </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <TrendingUp className="h-4 w-4 text-red-500" />
-              <span className="text-[11px] text-gray-400">Maior variação</span>
+              <span className="text-[11px] text-muted">Maior variação</span>
             </div>
             <p className="text-xl font-bold text-red-primary">
               {anomalias.length > 0
@@ -284,10 +284,10 @@ export function AnomaliasClient({
                 : "—"}
             </p>
           </div>
-          <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <div className="mb-1 flex items-center gap-1.5">
               <ArrowUpRight className="h-4 w-4 text-red-500" />
-              <span className="text-[11px] text-gray-400">Maior salto (R$)</span>
+              <span className="text-[11px] text-muted">Maior salto (R$)</span>
             </div>
             <p className="text-xl font-bold text-red-primary">
               {anomalias.length > 0
@@ -303,8 +303,8 @@ export function AnomaliasClient({
         {chartData.length > 0 && (
           <div className="mb-6 flex flex-col gap-4 lg:flex-row">
             {/* Chart */}
-            <div className="min-w-0 flex-1 rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
-              <h2 className="mb-3 font-serif text-base font-bold text-navy">
+            <div className="min-w-0 flex-1 rounded-lg border border-border bg-card p-4 shadow-sm">
+              <h2 className="mb-3 font-serif text-base font-bold text-foreground">
                 Anomalias por Órgão
                 {hasActiveFilters && (
                   <span className="ml-2 text-xs font-normal text-amber-600">
@@ -319,15 +319,15 @@ export function AnomaliasClient({
                     layout="vertical"
                     margin={{ left: 5, right: 10 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                     <XAxis
                       type="number"
-                      tick={{ fontSize: 9, fill: "#94A3B8" }}
+                      tick={{ fontSize: 9, fill: "var(--muted)" }}
                     />
                     <YAxis
                       type="category"
                       dataKey="orgao"
-                      tick={{ fontSize: 9, fill: "#1e293b", fontWeight: 600 }}
+                      tick={{ fontSize: 9, fill: "var(--foreground)", fontWeight: 600 }}
                       width={55}
                     />
                     <Tooltip content={<ChartTooltip />} />
@@ -343,11 +343,11 @@ export function AnomaliasClient({
             </div>
 
             {/* Filters panel */}
-            <div className="w-full rounded-lg border border-gray-100 bg-white p-4 shadow-sm lg:w-60 lg:flex-shrink-0 lg:self-start">
+            <div className="w-full rounded-lg border border-border bg-card p-4 shadow-sm lg:w-60 lg:flex-shrink-0 lg:self-start">
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-gray-400" />
-                  <h3 className="text-sm font-bold text-navy">Filtros</h3>
+                  <Filter className="h-4 w-4 text-muted" />
+                  <h3 className="text-sm font-bold text-foreground">Filtros</h3>
                 </div>
                 {hasActiveFilters && (
                   <button
@@ -362,7 +362,7 @@ export function AnomaliasClient({
 
               <div className="space-y-3">
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
+                  <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-muted">
                     <MapPin className="h-3 w-3" />
                     Estado
                   </label>
@@ -372,7 +372,7 @@ export function AnomaliasClient({
                       setFilterEstado(e.target.value);
                       setFilterOrgao("");
                     }}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-navy focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+                    className="w-full rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
                   >
                     <option value="">Todos os estados</option>
                     {uniqueEstados.map((e) => (
@@ -384,14 +384,14 @@ export function AnomaliasClient({
                 </div>
 
                 <div>
-                  <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-gray-500">
+                  <label className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-muted">
                     <Building2 className="h-3 w-3" />
                     Órgão
                   </label>
                   <select
                     value={filterOrgao}
                     onChange={(e) => setFilterOrgao(e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-navy focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+                    className="w-full rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
                   >
                     <option value="">Todos os órgãos</option>
                     {uniqueOrgaos.map((o) => (
@@ -404,18 +404,18 @@ export function AnomaliasClient({
 
                 {/* Filter summary */}
                 {hasActiveFilters && (
-                  <div className="rounded-md bg-amber-50 p-2.5">
-                    <p className="text-[11px] font-medium text-amber-700">
+                  <div className="rounded-md bg-amber-50 p-2.5 dark:bg-amber-950">
+                    <p className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
                       {formatNumber(filteredAnomalias.length)} de{" "}
                       {formatNumber(anomalias.length)} anomalias
                     </p>
                     {filterEstado && (
-                      <p className="mt-0.5 text-[10px] text-amber-600">
+                      <p className="mt-0.5 text-[10px] text-amber-600 dark:text-amber-400">
                         Estado: {filterEstado}
                       </p>
                     )}
                     {filterOrgao && (
-                      <p className="mt-0.5 text-[10px] text-amber-600">
+                      <p className="mt-0.5 text-[10px] text-amber-600 dark:text-amber-400">
                         Órgão: {filterOrgao}
                       </p>
                     )}
@@ -427,11 +427,11 @@ export function AnomaliasClient({
         )}
 
         {/* Main table */}
-        <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-serif text-base font-bold text-navy">
+            <h2 className="font-serif text-base font-bold text-foreground">
               Membros com variação atípica
-              <span className="ml-2 text-xs font-normal text-gray-400">
+              <span className="ml-2 text-xs font-normal text-muted">
                 ({filteredAnomalias.length} resultados em {currentYear})
               </span>
             </h2>
@@ -439,13 +439,13 @@ export function AnomaliasClient({
 
           {filteredAnomalias.length === 0 ? (
             <div className="py-12 text-center">
-              <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-gray-300" />
-              <p className="text-sm text-gray-500">
+              <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-muted" />
+              <p className="text-sm text-muted">
                 {hasActiveFilters
                   ? "Nenhuma anomalia encontrada com os filtros selecionados."
                   : `Nenhuma anomalia detectada com variação > ${minVariacao}% em ${currentYear}.`}
               </p>
-              <p className="mt-1 text-xs text-gray-400">
+              <p className="mt-1 text-xs text-muted">
                 {hasActiveFilters
                   ? "Tente ajustar ou limpar os filtros."
                   : "Tente reduzir o filtro de variação mínima."}
@@ -455,7 +455,7 @@ export function AnomaliasClient({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-200 text-left text-[11px] uppercase tracking-wider text-gray-400">
+                  <tr className="border-b border-border text-left text-[11px] uppercase tracking-wider text-muted">
                     <th className="pb-2 pr-4">#</th>
                     <th className="pb-2 pr-4">Nome</th>
                     <th className="pb-2 pr-4">Órgão</th>
@@ -477,39 +477,39 @@ export function AnomaliasClient({
                     return (
                       <tr
                         key={`${a.nome}-${a.orgao}-${a.mesAtual}`}
-                        className="border-b border-gray-50"
+                        className="border-b border-border"
                       >
-                        <td className="py-2.5 pr-4 text-xs text-gray-400">
+                        <td className="py-2.5 pr-4 text-xs text-muted">
                           {i + 1}
                         </td>
                         <td className="py-2.5 pr-4">
-                          <div className="font-medium text-navy">{a.nome}</div>
-                          <div className="text-[10px] text-gray-400">
+                          <div className="font-medium text-foreground">{a.nome}</div>
+                          <div className="text-[10px] text-muted">
                             {a.cargo}
                           </div>
                         </td>
                         <td className="py-2.5 pr-4">
                           <Link
                             href={`/orgao/${encodeURIComponent(a.orgao)}?ano=${currentYear}`}
-                            className="text-xs font-medium text-navy hover:underline"
+                            className="text-xs font-medium text-foreground hover:underline"
                           >
                             {a.orgao}
                           </Link>
-                          <div className="text-[10px] text-gray-400">
+                          <div className="text-[10px] text-muted">
                             {a.estado}
                           </div>
                         </td>
-                        <td className="py-2.5 pr-4 text-xs text-gray-500">
+                        <td className="py-2.5 pr-4 text-xs text-muted">
                           {formatMes(a.mesAnterior)} → {formatMes(a.mesAtual)}
                         </td>
-                        <td className="py-2.5 pr-4 text-right text-xs text-gray-500">
+                        <td className="py-2.5 pr-4 text-right text-xs text-muted">
                           {formatCurrencyFull(a.totalAnterior)}
                         </td>
-                        <td className="py-2.5 pr-4 text-right text-xs font-semibold text-navy">
+                        <td className="py-2.5 pr-4 text-right text-xs font-semibold text-foreground">
                           {formatCurrencyFull(a.totalAtual)}
                         </td>
                         <td className="py-2.5 pr-4 text-right">
-                          <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700">
+                          <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-bold text-amber-700 dark:bg-amber-900 dark:text-amber-300">
                             +{formatPercent(a.variacaoPct)}
                           </span>
                         </td>
@@ -517,7 +517,7 @@ export function AnomaliasClient({
                           <div className="text-xs font-semibold text-red-primary">
                             +{formatCurrency(a.variacaoAbs)}
                           </div>
-                          <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+                          <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-surface">
                             <div
                               className="h-full rounded-full bg-red-400"
                               style={{ width: `${barWidth}%` }}

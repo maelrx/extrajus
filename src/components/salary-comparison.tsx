@@ -14,12 +14,12 @@ export function SalaryComparison({ remuneracao, nome }: SalaryComparisonProps) {
   const comparisons = useMemo(() => getSalaryComparison(remuneracao), [remuneracao]);
 
   return (
-    <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm">
-      <h3 className="mb-1 flex items-center gap-2 font-serif text-base font-bold text-navy">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <h3 className="mb-1 flex items-center gap-2 font-serif text-base font-bold text-foreground">
         <Clock className="h-4 w-4 text-amber" />
         Quanto tempo para ganhar isso?
       </h3>
-      <p className="mb-4 text-xs text-gray-500">
+      <p className="mb-4 text-xs text-muted">
         A remuneração de {formatCurrency(remuneracao)}
         {nome ? ` de ${nome}` : ""} equivale a:
       </p>
@@ -27,16 +27,16 @@ export function SalaryComparison({ remuneracao, nome }: SalaryComparisonProps) {
       <div className="space-y-3">
         {comparisons.map((c) => (
           <div key={c.profissao} className="flex items-center gap-3">
-            <Briefcase className="h-4 w-4 shrink-0 text-gray-400" />
+            <Briefcase className="h-4 w-4 shrink-0 text-muted" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">{c.profissao}</span>
-                <span className="text-xs text-gray-400">
+                <span className="text-sm text-foreground">{c.profissao}</span>
+                <span className="text-xs text-muted">
                   ({formatCurrency(c.salario)}/mês)
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-2">
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-100">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface">
                   <div
                     className="h-full rounded-full bg-red-primary transition-all"
                     style={{
@@ -48,7 +48,7 @@ export function SalaryComparison({ remuneracao, nome }: SalaryComparisonProps) {
                   {c.mesesEquivalentes} meses
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-gray-400">
+              <p className="mt-0.5 text-[11px] text-muted">
                 ({c.anosEquivalentes} anos de trabalho)
               </p>
             </div>
