@@ -22,6 +22,7 @@ export interface Member {
   remuneracaoTotal: number;
   acimaTeto: number;
   percentualAcimaTeto: number;
+  abateTeto: number;
   historico: MonthlyRecord[];
 }
 
@@ -238,6 +239,7 @@ function generateMembers(): Member[] {
       remuneracaoTotal,
       acimaTeto,
       percentualAcimaTeto,
+      abateTeto: 0,
       historico: generateMonthlyHistory(remuneracaoBase, verbasIndenizatorias, direitosEventuais, direitosPessoais),
     });
   }

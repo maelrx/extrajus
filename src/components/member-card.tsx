@@ -249,6 +249,26 @@ export function MemberCard({ member, rank, isExpanded, onToggle }: MemberCardPro
                         </td>
                       </tr>
                     )}
+                    {member.abateTeto >= 0 && (
+                      <tr className="bg-green-50/50">
+                        <td className="px-4 py-2.5 font-semibold text-green-700">
+                          Retenção pelo Teto
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-bold text-green-700">
+                          −{formatCurrencyFull(member.abateTeto)}
+                        </td>
+                      </tr>
+                    )}
+                    {member.abateTeto >= 0 && member.acimaTeto > member.abateTeto && (
+                      <tr className="bg-red-50/30">
+                        <td className="px-4 py-2.5 text-sm font-medium text-red-primary">
+                          Excedente não retido
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-semibold text-red-primary">
+                          +{formatCurrencyFull(member.acimaTeto - member.abateTeto)}
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

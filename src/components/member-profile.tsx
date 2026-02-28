@@ -316,6 +316,26 @@ export function MemberProfileView({ member }: { member: MemberProfile }) {
                   </td>
                 </tr>
               )}
+              {member.abateTeto >= 0 && (
+                <tr className="bg-green-50/50">
+                  <td className="px-5 py-3 font-semibold text-green-700">
+                    Retenção pelo Teto
+                  </td>
+                  <td className="px-5 py-3 text-right font-bold text-green-700">
+                    −{formatCurrencyFull(member.abateTeto)}
+                  </td>
+                </tr>
+              )}
+              {member.abateTeto >= 0 && member.acimaTeto > member.abateTeto && (
+                <tr className="bg-red-50/30">
+                  <td className="px-5 py-3 text-sm font-medium text-red-primary">
+                    Excedente não retido
+                  </td>
+                  <td className="px-5 py-3 text-right font-semibold text-red-primary">
+                    +{formatCurrencyFull(member.acimaTeto - member.abateTeto)}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </motion.div>
@@ -352,6 +372,7 @@ export function MemberProfileView({ member }: { member: MemberProfile }) {
                     <th className="px-4 py-2.5 text-right font-semibold text-gray-500">Pessoais</th>
                     <th className="px-4 py-2.5 text-right font-semibold text-gray-500">Total</th>
                     <th className="px-4 py-2.5 text-right font-semibold text-red-primary">Acima do teto</th>
+                    <th className="px-4 py-2.5 text-right font-semibold text-green-700">Abate-teto</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -381,6 +402,11 @@ export function MemberProfileView({ member }: { member: MemberProfile }) {
                       <td className={`px-4 py-2.5 text-right font-semibold ${h.acimaTeto > 0 ? "text-red-primary" : "text-green-600"}`}>
                         {h.acimaTeto > 0
                           ? `+${formatCurrency(h.acimaTeto)}`
+                          : "—"}
+                      </td>
+                      <td className={`px-4 py-2.5 text-right font-semibold ${h.abateTeto >= 0 ? (h.abateTeto > 0 ? "text-green-700" : "text-red-400") : "text-gray-300"}`}>
+                        {h.abateTeto >= 0
+                          ? (h.abateTeto > 0 ? `−${formatCurrency(h.abateTeto)}` : "R$ 0")
                           : "—"}
                       </td>
                     </tr>

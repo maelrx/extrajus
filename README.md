@@ -280,7 +280,7 @@ Distribuído sob a licença MIT. Veja [LICENSE](LICENSE) para mais informações
 
 ## Contato
 
-- GitHub: https://github.com/andredutraf
+- GitHub: https://github.com/skottrun
 - Twitter: https://x.com/skottrun
 
 ---

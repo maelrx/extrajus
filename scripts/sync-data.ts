@@ -47,6 +47,7 @@ sqlite.exec(`
     remuneracao_total REAL NOT NULL,
     acima_teto REAL NOT NULL,
     percentual_acima_teto REAL NOT NULL,
+    abate_teto REAL NOT NULL DEFAULT -1,
     mes_referencia TEXT NOT NULL,
     ano_referencia INTEGER NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -80,11 +81,16 @@ sqlite.exec(`
   );
 `);
 
+// Migration: add abate_teto column for existing databases
+try {
+  sqlite.exec(`ALTER TABLE membros ADD COLUMN abate_teto REAL NOT NULL DEFAULT -1`);
+} catch { /* Column already exists */ }
+
 const insertMembro = sqlite.prepare(`
   INSERT INTO membros (nome, cargo, orgao, estado, remuneracao_base, verbas_indenizatorias,
     direitos_eventuais, direitos_pessoais, remuneracao_total, acima_teto,
-    percentual_acima_teto, mes_referencia, ano_referencia)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    percentual_acima_teto, abate_teto, mes_referencia, ano_referencia)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 const insertSyncLog = sqlite.prepare(`
@@ -98,6 +104,8 @@ const ORGAOS = [
   "tjgo", "tjma", "tjmg", "tjms", "tjmt", "tjpa", "tjpb", "tjpe",
   "tjpi", "tjpr", "tjrj", "tjrn", "tjro", "tjrr", "tjrs", "tjsc",
   "tjse", "tjsp", "tjto",
+  // Tribunais Regionais Federais
+  "trf1", "trf2", "trf3", "trf4", "trf5", "trf6",
   // MPs estaduais
   "mppb", "mpac", "mpal", "mpam", "mpap", "mpba", "mpce",
   "mpes", "mpgo", "mpma", "mpmg", "mpms", "mpmt", "mppa", "mppe",
@@ -117,6 +125,10 @@ function mapOrgaoId(id: string): string {
     mpdft: "MPDFT",
   };
   if (federalMPs[id]) return federalMPs[id];
+
+  // TRFs
+  const trf = id.match(/^trf(\d)$/i);
+  if (trf) return `TRF-${trf[1]}`;
 
   const prefix = id.substring(0, 2).toUpperCase();
   const suffix = id.substring(2).toUpperCase();
@@ -201,6 +213,56 @@ function mapEstadoFromLotacao(orgaoId: string, lotacao: string): string {
   const lot = lotacao.trim().toUpperCase();
 
   if (orgaoId === "mpdft") return "DF";
+
+  // TRFs — each has a different lotação format
+  if (orgaoId.startsWith("trf")) {
+    const trfSede: Record<string, string> = {
+      trf1: "DF", trf2: "RJ", trf3: "SP", trf4: "RS", trf5: "PE", trf6: "MG",
+    };
+
+    // TRF-1: "VARA1/SSJCFS/SJBA" → state is the LAST "/SJ{XX}" segment
+    if (orgaoId === "trf1") {
+      const sjMatch = lot.match(/\/SJ([A-Z]{2})(?:$|\/)/);
+      if (sjMatch) return sjMatch[1];
+      // Simple fallback: last 2 chars after last "SJ"
+      const lastSJ = lot.lastIndexOf("/SJ");
+      if (lastSJ >= 0 && lastSJ + 4 <= lot.length) return lot.substring(lastSJ + 3, lastSJ + 5);
+      return trfSede[orgaoId];
+    }
+
+    // TRF-2: city names → map known ES cities, default RJ
+    if (orgaoId === "trf2") {
+      const esCities = ["VITÓRIA", "VITORIA", "CACHOEIRO", "LINHARES", "SERRA", "COLATINA", "GUARAPARI", "SÃO MATEUS", "SAO MATEUS", "ARACRUZ", "CARIACICA", "VILA VELHA"];
+      if (esCities.some(c => lot.includes(c))) return "ES";
+      return "RJ";
+    }
+
+    // TRF-3: covers SP and MS only. "SJSP"/"SJMS" are state codes; "SJCAMPOS"/"SJRIO PRETO" are SP cities
+    if (orgaoId === "trf3") {
+      // Only match exact state codes SJSP or SJMS (not SJCAMPOS, SJRIO PRETO, etc.)
+      if (lot.includes("SJMS")) return "MS";
+      const msCities = ["CAMPO GRANDE", "CORUMBA", "CORUMBÁ", "DOURADOS", "COXIM", "NAVIRAI", "NAVIRAÍ", "PONTA PORA", "PONTA PORÃ", "TRES LAGOAS", "TRÊS LAGOAS"];
+      if (msCities.some(c => lot.includes(c))) return "MS";
+      return "SP";
+    }
+
+    // TRF-4: "PRCTB01" → first 2 chars = state (PR, SC, RS)
+    if (orgaoId === "trf4") {
+      const prefix2 = lot.substring(0, 2);
+      if (["PR", "SC", "RS"].includes(prefix2)) return prefix2;
+      return "RS";
+    }
+
+    // TRF-5: "10ª VARA - FORTALEZA-CE" → state after last "-"
+    if (orgaoId === "trf5") {
+      const stateMatch = lot.match(/-([A-Z]{2})$/);
+      if (stateMatch) return stateMatch[1];
+      return "PE";
+    }
+
+    // TRF-6: only MG
+    return trfSede[orgaoId] || "DF";
+  }
 
   if (orgaoId === "mpf") {
     // PR-XX → state code (e.g. PR-SP → SP)
@@ -335,6 +397,7 @@ interface MemberAgg {
   verbasIndenizatorias: number;
   direitosEventuais: number;
   direitosPessoais: number;
+  abateTeto: number;
 }
 
 /**
@@ -367,7 +430,9 @@ async function fetchOrgaoCSV(
   const members = new Map<string, MemberAgg>();
   const orgaoName = mapOrgaoId(orgaoId);
   const isFederalMP = ["mpf", "mpt", "mpm", "mpdft"].includes(orgaoId);
-  const defaultEstado = isFederalMP ? "DF" : mapEstado(orgaoId);
+  const isTRF = /^trf\d$/i.test(orgaoId);
+  const isFederalOrgan = isFederalMP || isTRF;
+  const defaultEstado = isFederalOrgan ? "DF" : mapEstado(orgaoId);
 
   for (const row of rows) {
     const nome = row.nome?.trim();
@@ -378,8 +443,8 @@ async function fetchOrgaoCSV(
     const macro = row.desambiguacao_macro?.toLowerCase() || "";
 
     if (!members.has(nome)) {
-      // For federal MPs, derive state from lotação field
-      const estado = isFederalMP
+      // For federal organs (MPs + TRFs), derive state from lotação field
+      const estado = isFederalOrgan
         ? mapEstadoFromLotacao(orgaoId, row.lotacao || "")
         : defaultEstado;
 
@@ -392,6 +457,7 @@ async function fetchOrgaoCSV(
         verbasIndenizatorias: 0,
         direitosEventuais: 0,
         direitosPessoais: 0,
+        abateTeto: -1, // -1 = no data; >= 0 = rubric found
       });
     }
 
@@ -428,8 +494,14 @@ async function fetchOrgaoCSV(
         // Default: classify as verbas indenizatórias
         m.verbasIndenizatorias += valor;
       }
+    } else if (categoria === "descontos") {
+      const detalhe = (row.detalhamento_contracheque || "").toLowerCase();
+      if (detalhe.includes("teto") || macro.includes("teto")) {
+        // Mark rubric as found (transition from -1 to 0), then accumulate
+        if (m.abateTeto < 0) m.abateTeto = 0;
+        m.abateTeto += Math.abs(valor);
+      }
     }
-    // Skip "descontos" — we work with gross values
   }
 
   return Array.from(members.values());
@@ -478,6 +550,7 @@ async function syncOrgao(
           total,
           acima,
           percentual,
+          m.abateTeto,
           mesRef,
           year
         );
@@ -514,6 +587,7 @@ async function seedWithMockData() {
         m.remuneracaoTotal,
         m.acimaTeto,
         m.percentualAcimaTeto,
+        0, // abate_teto
         "2025-06",
         2025
       );

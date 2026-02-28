@@ -164,6 +164,7 @@ function normalizeMembro(
     remuneracaoTotal,
     acimaTeto,
     percentualAcimaTeto,
+    abateTeto: 0, // Not available via JSON API
     historico: [], // Filled by fetching multiple months
   };
 }

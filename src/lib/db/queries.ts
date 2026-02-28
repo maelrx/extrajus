@@ -193,6 +193,7 @@ function rowToMember(row: typeof membros.$inferSelect): Member {
     remuneracaoTotal: row.remuneracaoTotal,
     acimaTeto: row.acimaTeto,
     percentualAcimaTeto: row.percentualAcimaTeto,
+    abateTeto: 0,
     historico: [], // Loaded separately if needed
   };
 }

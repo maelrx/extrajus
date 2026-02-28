@@ -42,6 +42,7 @@ function rowToMember(row: Record<string, unknown>): Member {
     remuneracaoTotal: row.remuneracao_total as number,
     acimaTeto: row.acima_teto as number,
     percentualAcimaTeto: row.percentual_acima_teto as number,
+    abateTeto: (row.abate_teto as number) || 0,
     historico: [],
   };
 }
@@ -237,6 +238,7 @@ export interface MemberProfile {
   remuneracaoAtual: number;
   acimaTeto: number;
   percentualAcimaTeto: number;
+  abateTeto: number;
   remuneracaoBase: number;
   verbasIndenizatorias: number;
   direitosEventuais: number;
@@ -256,6 +258,7 @@ export interface MemberProfile {
     direitosPessoais: number;
     remuneracaoTotal: number;
     acimaTeto: number;
+    abateTeto: number;
   }[];
 }
 
@@ -330,6 +333,7 @@ export function getMemberProfile(orgaoSlug: string, nomeSlug: string): MemberPro
         direitosPessoais: r.direitos_pessoais as number,
         remuneracaoTotal: r.remuneracao_total as number,
         acimaTeto: r.acima_teto as number,
+        abateTeto: (r.abate_teto as number) || 0,
       }));
 
       return {
@@ -341,6 +345,7 @@ export function getMemberProfile(orgaoSlug: string, nomeSlug: string): MemberPro
         remuneracaoAtual: latest.remuneracao_total as number,
         acimaTeto: latest.acima_teto as number,
         percentualAcimaTeto: latest.percentual_acima_teto as number,
+        abateTeto: (latest.abate_teto as number) || 0,
         remuneracaoBase: latest.remuneracao_base as number,
         verbasIndenizatorias: latest.verbas_indenizatorias as number,
         direitosEventuais: latest.direitos_eventuais as number,
